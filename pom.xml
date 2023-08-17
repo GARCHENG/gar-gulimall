@@ -10,6 +10,9 @@
     <description>聚合工程</description>
 
     <packaging>pom</packaging>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
 
     <modules>
         <module>gulimall-coupon</module>
