@@ -6,6 +6,7 @@ import java.util.Map;
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.garcheng.gulimall.common.utils.PageUtils;
 import com.garcheng.gulimall.common.utils.R;
+import com.garcheng.gulimall.member.feign.CouponFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,14 @@ import com.garcheng.gulimall.member.service.GrowthChangeHistoryService;
 public class GrowthChangeHistoryController {
     @Autowired
     private GrowthChangeHistoryService growthChangeHistoryService;
+    @Autowired
+    private CouponFeignService couponFeignService;
 
+
+    @RequestMapping("test")
+    public R test(){
+        return couponFeignService.test();
+    }
     /**
      * 列表
      */

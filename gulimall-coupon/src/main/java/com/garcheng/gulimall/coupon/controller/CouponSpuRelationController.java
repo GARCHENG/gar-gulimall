@@ -31,6 +31,12 @@ public class CouponSpuRelationController {
     @Autowired
     private CouponSpuRelationService couponSpuRelationService;
 
+    @RequestMapping("member/test")
+    public R test(){
+        return R.ok().put("test","test");
+    }
+
+
     /**
      * 列表
      */
