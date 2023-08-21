@@ -1,0 +1,13 @@
+#spring:
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: 127.0.0.1:8848
+#    gateway:
+#      routes:
+#        - id: query_route
+#          uri: https://www.baidu.com/
+#          predicates:
+#          - Query=url,baidu
+#  application:
+#    name: gulimall-gateway
