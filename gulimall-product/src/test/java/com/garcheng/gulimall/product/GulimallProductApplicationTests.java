@@ -1,6 +1,5 @@
 package com.garcheng.gulimall.product;
 
-import com.aliyun.oss.OSSClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,8 +15,6 @@ import java.io.FileInputStream;
 @SpringBootTest
 public class GulimallProductApplicationTests {
 
-    @Autowired
-    OSSClient ossClient;
 
     @Test
     public void contextLoads() throws Exception {
@@ -54,8 +51,8 @@ public class GulimallProductApplicationTests {
 //                ossClient.shutdown();
 //            }
 //        }
-        ossClient.putObject("gar-gulimall","test2.webp",new FileInputStream("C:\\Users\\jzgar\\Desktop\\pic\\HomeMainRotation\\banner1.webp"));
-        System.out.println("上传成功");
+//        ossClient.putObject("gar-gulimall","test2.webp",new FileInputStream("C:\\Users\\jzgar\\Desktop\\pic\\HomeMainRotation\\banner1.webp"));
+//        System.out.println("上传成功");
 
     }
 
