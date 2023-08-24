@@ -2,9 +2,7 @@ package com.garcheng.gulimall.product.service.impl;
 
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,8 +34,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         List<CategoryEntity> entities = list();
         List<CategoryEntity> menu1 = entities.stream()
                 .filter(categoryEntity -> categoryEntity.getParentCid() == 0)
-                .map(menu ->{
-                    menu.setChildren(getChildren(menu,entities));
+                .map(menu -> {
+                    menu.setChildren(getChildren(menu, entities));
                     return menu;
                 })
                 .sorted(Comparator.comparingInt(o -> (o.getSort() == null ? 0 : o.getSort())))
@@ -51,10 +49,27 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         removeByIds(asList);
     }
 
+    @Override
+    public Long[] findCategoryPath(Long catelogId) {
+        List<Long> categoryPath = new ArrayList<>();
+        getParentCatIdToList(catelogId,categoryPath);
+        Collections.reverse(categoryPath);
+        return categoryPath.toArray(new Long[categoryPath.size()]);
+    }
+
+    private List getParentCatIdToList(Long catelogId, List<Long> categoryPath) {
+        CategoryEntity categoryEntity = this.getById(catelogId);
+        categoryPath.add(categoryEntity.getCatId());
+        if (categoryEntity.getParentCid()!=0){
+            getParentCatIdToList(categoryEntity.getParentCid(),categoryPath);
+        }
+        return categoryPath;
+    }
+
     private List<CategoryEntity> getChildren(CategoryEntity root, List<CategoryEntity> all) {
         return all.stream().filter(children -> children.getParentCid() == root.getCatId())
                 .map(children -> {
-                    children.setChildren(getChildren(children,all));
+                    children.setChildren(getChildren(children, all));
                     return children;
                 })
                 .sorted(Comparator.comparingInt(o -> (o.getSort() == null ? 0 : o.getSort())))
