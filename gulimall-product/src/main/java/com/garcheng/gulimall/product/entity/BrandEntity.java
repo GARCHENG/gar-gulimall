@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import com.garcheng.gulimall.common.vaild.AddGroup;
+import com.garcheng.gulimall.common.vaild.ListValue;
 import com.garcheng.gulimall.common.vaild.UpdateGroup;
 import lombok.Data;
 import org.hibernate.validator.constraints.URL;
@@ -54,6 +55,7 @@ public class BrandEntity implements Serializable {
      * 显示状态[0-不显示；1-显示]
      */
     @NotNull(message = "显示状态不能为空！",groups = AddGroup.class)
+    @ListValue(values = {0,1} ,groups = AddGroup.class)
     private Integer showStatus;
     /**
      * 检索首字母

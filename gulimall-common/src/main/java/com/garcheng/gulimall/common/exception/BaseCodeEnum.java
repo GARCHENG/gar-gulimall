@@ -1,6 +1,5 @@
 package com.garcheng.gulimall.common.exception;
 
-import lombok.Data;
 
 public enum BaseCodeEnum {
 
