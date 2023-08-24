@@ -17,7 +17,7 @@ public class GlobalExceptionHandle {
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public R handleMethodArgumentNotValidException(MethodArgumentNotValidException exception){
-        log.error("数据校验除了问题{},异常类型为：{}",exception.getMessage(),exception.getClass());
+        log.error("数据校验出了问题：{},异常类型为：{}",exception.getMessage(),exception.getClass());
         Map resultMap = new HashMap<>();
         for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
             resultMap.put(fieldError.getField(),fieldError.getDefaultMessage());
@@ -27,7 +27,7 @@ public class GlobalExceptionHandle {
 
     @ExceptionHandler(value = Throwable.class)
     public R handleException(Throwable throwable){
-        log.error("数据校验除了问题{},异常类型为：{}",throwable.getMessage(),throwable.getClass());
+        log.error("系统出现异常：{},异常类型为：{}",throwable.getMessage(),throwable.getClass());
         return R.error(BaseCodeEnum.UNKONW_EXCEPTION.getCode(),BaseCodeEnum.UNKONW_EXCEPTION.getMessage());
     }
 
