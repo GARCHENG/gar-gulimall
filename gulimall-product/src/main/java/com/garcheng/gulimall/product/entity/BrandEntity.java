@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
+import org.hibernate.validator.constraints.URL;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -29,12 +31,13 @@ public class BrandEntity implements Serializable {
 	/**
 	 * 品牌名
 	 */
-	@NotNull(message = "姓名不能为空！")
+	@NotEmpty(message = "姓名不能为空！")
 	private String name;
 	/**
 	 * 品牌logo地址
 	 */
 	@NotNull(message = "logo地址不能为空！")
+	@URL(message = "不是一个合法的url地址！")
 	private String logo;
 	/**
 	 * 介绍
