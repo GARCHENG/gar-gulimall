@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * 品牌
  * 
@@ -27,26 +29,32 @@ public class BrandEntity implements Serializable {
 	/**
 	 * 品牌名
 	 */
+	@NotNull(message = "姓名不能为空！")
 	private String name;
 	/**
 	 * 品牌logo地址
 	 */
+	@NotNull(message = "logo地址不能为空！")
 	private String logo;
 	/**
 	 * 介绍
 	 */
+	@NotNull(message = "描述地址不能为空！")
 	private String descript;
 	/**
 	 * 显示状态[0-不显示；1-显示]
 	 */
+	@NotNull(message = "显示状态不能为空！")
 	private Integer showStatus;
 	/**
 	 * 检索首字母
 	 */
+	@NotNull(message = "检索的首字母不能为空！")
 	private String firstLetter;
 	/**
 	 * 排序
 	 */
+	@NotNull(message = "排序不能为空！")
 	private Integer sort;
 
 }
