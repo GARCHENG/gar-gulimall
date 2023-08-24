@@ -20,8 +20,8 @@ public class GulimallProductApplicationTests {
     public void contextLoads() throws Exception {
 
 //        // RAM用户的访问密钥（AccessKey ID和AccessKey Secret）。
-//        String accessKeyId = "LTAI5t7MePVnWhw51o9wQjsc";
-//        String accessKeySecret = "NTEbOULofSO1yDDxWtWNgU1yE8ZX1q";
+//        String accessKeyId = "LTAIxxxxxxxxxxxxQjsc";
+//        String accessKeySecret = "NTEbOULxxxxxxxxxxNgU1yE8ZX1q";
 //// 使用代码嵌入的RAM用户的访问密钥配置访问凭证。
 //        CredentialsProvider credentialsProvider = new DefaultCredentialProvider(accessKeyId, accessKeySecret);
 //        // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
