@@ -41,7 +41,11 @@ public class AttrRespVo {
      */
     private Integer showDesc;
 
+    private Long attrGroupId;
+
     private String catelogName;
 
     private String groupName;
+
+    private Long[] catelogPath;
 }

@@ -1,5 +1,6 @@
 package com.garcheng.gulimall.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.garcheng.gulimall.product.dao.AttrAttrgroupRelationDao;
 import com.garcheng.gulimall.product.dao.AttrGroupDao;
 import com.garcheng.gulimall.product.dao.CategoryDao;
@@ -7,6 +8,7 @@ import com.garcheng.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.garcheng.gulimall.product.entity.AttrGroupEntity;
 import com.garcheng.gulimall.product.entity.CategoryEntity;
 import com.garcheng.gulimall.product.service.AttrAttrgroupRelationService;
+import com.garcheng.gulimall.product.service.CategoryService;
 import com.garcheng.gulimall.product.vo.AttrRespVo;
 import com.garcheng.gulimall.product.vo.AttrVo;
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("attrService")
 public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements AttrService {
 
+    @Autowired
+    private CategoryService categoryService;
     @Autowired
     private AttrAttrgroupRelationDao relationDao;
     @Autowired
@@ -104,5 +108,43 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         pageUtils.setList(respVos);
         return pageUtils;
     }
+
+    @Override
+    public AttrRespVo findAttrInfo(Long attrId) {
+        AttrEntity attrEntity = getById(attrId);
+        AttrRespVo attrRespVo = new AttrRespVo();
+        BeanUtils.copyProperties(attrEntity,attrRespVo);
+
+        AttrAttrgroupRelationEntity relationEntity = relationDao.selectOne(new QueryWrapper<AttrAttrgroupRelationEntity>()
+                .eq("attr_id", attrEntity.getAttrId()));
+        if (relationEntity != null) {
+            attrRespVo.setAttrGroupId(relationEntity.getAttrGroupId());
+        }
+
+        attrRespVo.setCatelogPath(categoryService.findCategoryPath(attrEntity.getCatelogId()));
+
+        return attrRespVo;
+    }
+
+    @Override
+    public void updateAttr(AttrVo attr) {
+        AttrEntity attrEntity = new AttrEntity();
+        BeanUtils.copyProperties(attr,attrEntity);
+        this.updateById(attrEntity);
+
+        Integer count = relationDao.selectCount(new QueryWrapper<AttrAttrgroupRelationEntity>()
+                .eq("attr_id", attr.getAttrId()));
+        AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
+        relationEntity.setAttrGroupId(attr.getAttrGroupId());
+        if (count == 0){
+            relationEntity.setAttrId(attr.getAttrId());
+            relationDao.insert(relationEntity);
+        }else {
+            relationDao.update(relationEntity,new UpdateWrapper<AttrAttrgroupRelationEntity>()
+                    .eq("attr_id",attr.getAttrId()));
+
+        }
+    }
+
 
 }
