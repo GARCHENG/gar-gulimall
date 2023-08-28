@@ -5,6 +5,7 @@ import com.garcheng.gulimall.common.utils.PageUtils;
 import com.garcheng.gulimall.product.entity.BrandEntity;
 import com.garcheng.gulimall.product.entity.CategoryBrandRelationEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,5 +24,7 @@ public interface CategoryBrandRelationService extends IService<CategoryBrandRela
     void updateBrandDetail(Long brandId, String name);
 
     void updateCategoryDetail(Long catId, String name);
+
+    List<BrandEntity> getBrandsListByCatId(Long catId);
 }
 
