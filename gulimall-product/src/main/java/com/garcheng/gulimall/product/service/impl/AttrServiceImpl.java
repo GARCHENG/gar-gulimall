@@ -63,7 +63,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         BeanUtils.copyProperties(attrVo, attrEntity);
         save(attrEntity);
 
-        if (attrVo.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode()) {
+        if (attrVo.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode() && attrVo.getAttrGroupId() != null) {
             AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = new AttrAttrgroupRelationEntity();
             attrAttrgroupRelationEntity.setAttrId(attrEntity.getAttrId());
             attrAttrgroupRelationEntity.setAttrGroupId(attrVo.getAttrGroupId());
@@ -138,7 +138,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         BeanUtils.copyProperties(attr, attrEntity);
         this.updateById(attrEntity);
 
-        if (attrEntity.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode()) {
+        if (attrEntity.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode() && attr.getAttrGroupId() != null) {
             Integer count = relationDao.selectCount(new QueryWrapper<AttrAttrgroupRelationEntity>()
                     .eq("attr_id", attr.getAttrId()));
 
@@ -174,8 +174,10 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         //查询在该分类下的基本规格属性且不在attrids中的attr
         QueryWrapper<AttrEntity> queryWrapper = new QueryWrapper<AttrEntity>()
                 .eq("catelog_id", catelogId)
-                .eq("attr_type", ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode())
-                .notIn("attr_id", attrIds);
+                .eq("attr_type", ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+        if (attrIds != null && attrIds.size() > 0){
+            queryWrapper.notIn("attr_id", attrIds);
+        }
         String key = (String) params.get("key");
         if (!StringUtils.isEmpty(key)) {
             queryWrapper.and((obj) -> {

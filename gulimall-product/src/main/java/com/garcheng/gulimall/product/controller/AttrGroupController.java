@@ -68,6 +68,12 @@ public class AttrGroupController {
         return R.ok().put("page",pageUtils);
     }
 
+    @RequestMapping("/attr/relation")
+    public R addAttrRelation(@RequestBody List<AttrGroupAttrRelationVo> voList){
+        relationService.addAttrRelation(voList);
+        return R.ok();
+    }
+
 
     @RequestMapping("/attr/relation/delete")
     public R deleteRelation(@RequestBody List<AttrGroupAttrRelationVo> voList){
