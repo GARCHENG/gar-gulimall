@@ -1,0 +1,10 @@
+package com.garcheng.gulimall.product.vo;
+
+import lombok.Data;
+
+@Data
+public class AttrGroupAttrRelationVo {
+//    [{"attrId":1,"attrGroupId":2}]
+    private Long attrId;
+    private Long attrGroupId;
+}

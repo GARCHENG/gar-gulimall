@@ -29,3 +29,7 @@
 #      secret-key: NTEbOULofSO1yDDxWtWNgU1yE8ZX1q
 #      oss:
 #        endpoint: oss-cn-guangzhou.aliyuncs.com
+
+#logging:
+#  level:
+#    com.garcheng.gulimall.product: debug
