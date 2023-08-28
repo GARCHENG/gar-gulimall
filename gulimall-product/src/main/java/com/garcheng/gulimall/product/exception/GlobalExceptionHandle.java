@@ -28,6 +28,7 @@ public class GlobalExceptionHandle {
     @ExceptionHandler(value = Throwable.class)
     public R handleException(Throwable throwable){
         log.error("系统出现异常：{},异常类型为：{}",throwable.getMessage(),throwable.getClass());
+        throwable.printStackTrace();
         return R.error(BaseCodeEnum.UNKONW_EXCEPTION.getCode(),BaseCodeEnum.UNKONW_EXCEPTION.getMessage());
     }
 

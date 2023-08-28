@@ -7,8 +7,10 @@ import java.util.Map;
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.garcheng.gulimall.product.entity.AttrEntity;
 import com.garcheng.gulimall.product.service.AttrAttrgroupRelationService;
+import com.garcheng.gulimall.product.service.AttrService;
 import com.garcheng.gulimall.product.service.CategoryService;
 import com.garcheng.gulimall.product.vo.AttrGroupAttrRelationVo;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,6 +40,8 @@ public class AttrGroupController {
     private CategoryService categoryService;
     @Autowired
     private AttrAttrgroupRelationService relationService;
+    @Autowired
+    private AttrService attrService;
 
     /**
      * 列表
@@ -56,6 +60,14 @@ public class AttrGroupController {
         return R.ok().put("data",entities);
 
     }
+
+    @RequestMapping("/{attrgroupId}/noattr/relation")
+    public R findNoRelation(@RequestParam Map<String, Object> params,
+                            @PathVariable("attrgroupId") Long attrgroupId){
+        PageUtils pageUtils = attrService.getNoRelationAttr(params,attrgroupId);
+        return R.ok().put("page",pageUtils);
+    }
+
 
     @RequestMapping("/attr/relation/delete")
     public R deleteRelation(@RequestBody List<AttrGroupAttrRelationVo> voList){
