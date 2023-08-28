@@ -10,6 +10,7 @@ import com.garcheng.gulimall.product.service.AttrAttrgroupRelationService;
 import com.garcheng.gulimall.product.service.AttrService;
 import com.garcheng.gulimall.product.service.CategoryService;
 import com.garcheng.gulimall.product.vo.AttrGroupAttrRelationVo;
+import com.garcheng.gulimall.product.vo.AttrGroupWithAttrVo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -120,6 +121,14 @@ public class AttrGroupController {
         attrGroupService.removeByIds(Arrays.asList(attrGroupIds));
 
         return R.ok();
+    }
+
+    @RequestMapping("/{catelogId}/withattr")
+    public R attrGroupWithAttrByCatelogId(@PathVariable("catelogId") Long catelogId){
+        List<AttrGroupWithAttrVo> attrGroupWithAttrVos = attrGroupService.findAttrGroupWithAttrByCatelogId(catelogId);
+
+        return R.ok().put("data",attrGroupWithAttrVos);
+
     }
 
 }
