@@ -25,10 +25,10 @@
 #spring:
 #  cloud:
 #    alicloud:
-#      access-key: LTAI5t7MePVnWhw51o9wQjsc
-#      secret-key: NTEbOULofSO1yDDxWtWNgU1yE8ZX1q
+#      access-key: xxxxxxxxxxxxxxxx
+#      secret-key: xxxxxxxxxxxxxxxx
 #      oss:
-#        endpoint: oss-cn-guangzhou.aliyuncs.com
+#        endpoint: xxxxxxxxxxxxxxxx
 
 #logging:
 #  level:
