@@ -1,11 +1,11 @@
 package com.garcheng.gulimall.product.service.impl;
 
+import com.garcheng.gulimall.common.to.SpuBoundsTo;
+import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.product.entity.*;
+import com.garcheng.gulimall.product.feign.CouponFeignService;
 import com.garcheng.gulimall.product.service.*;
-import com.garcheng.gulimall.product.vo.Attr;
-import com.garcheng.gulimall.product.vo.Images;
-import com.garcheng.gulimall.product.vo.Skus;
-import com.garcheng.gulimall.product.vo.SpuSaveVo;
+import com.garcheng.gulimall.product.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +40,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     private SkuSaleAttrValueService skuSaleAttrValueService;
     @Autowired
     private SkuImagesService skuImagesService;
+    @Autowired
+    private CouponFeignService couponFeignService;
 
 
     @Override
@@ -77,6 +79,14 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         productAttrValueService.saveSpuAttrValue(spuInfoEntity.getId(), spuSaveVo.getBaseAttrs());
 
         //保存优惠信息（远程）
+        SpuBoundsTo spuBoundsTo = new SpuBoundsTo();
+        Bounds bounds = spuSaveVo.getBounds();
+        BeanUtils.copyProperties(bounds,spuBoundsTo);
+        spuBoundsTo.setSpuId(spuInfoEntity.getId());
+        R r = couponFeignService.saveSpuBounds(spuBoundsTo);
+        if (r.getCode() != 0){
+            log.error("coupon服务远程调用失败~~~");
+        }
 
         //保存sku基本信息 pms_sku_info
         List<Skus> skus = spuSaveVo.getSkus();
@@ -122,6 +132,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     }).collect(Collectors.toList());
                     skuImagesService.saveBatch(skuImagesEntities);
                 }
+                //保存sku优惠信息
             });
         }
 
