@@ -123,7 +123,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     return skuSaleAttrValueEntity;
                 }).collect(Collectors.toList());
                 skuSaleAttrValueService.saveBatch(skuSaleAttrValueEntities);
-                //保存sku图片信息 pms_sku_images 并找出默认图片
+                //保存sku图片信息 pms_sku_images
                 if (skuImages != null) {
                     List<SkuImagesEntity> skuImagesEntities = skuImages.stream().map(skuImage -> {
                         SkuImagesEntity skuImagesEntity = new SkuImagesEntity();
@@ -132,6 +132,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                         return skuImagesEntity;
                     }).collect(Collectors.toList());
                     skuImagesService.saveBatch(skuImagesEntities);
+                    // TODO: 2023/8/29 处理imgurl为空的数据
                 }
                 //保存sku优惠信息
                 SkuReductTo skuReductTo = new SkuReductTo();

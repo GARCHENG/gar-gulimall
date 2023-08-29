@@ -62,6 +62,7 @@ public class SkuFullReductionServiceImpl extends ServiceImpl<SkuFullReductionDao
         if (memberPrice != null) {
             List<MemberPriceEntity> memberPriceEntityList = memberPrice.stream().map(obj -> {
                 MemberPriceEntity memberPriceEntity = new MemberPriceEntity();
+                memberPriceEntity.setSkuId(skuReductTo.getSkuId());
                 memberPriceEntity.setMemberLevelId(obj.getId());
                 memberPriceEntity.setMemberLevelName(obj.getName());
                 memberPriceEntity.setMemberPrice(obj.getPrice());
