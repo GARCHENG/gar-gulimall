@@ -3,7 +3,9 @@ package com.garcheng.gulimall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.garcheng.gulimall.common.utils.PageUtils;
 import com.garcheng.gulimall.product.entity.ProductAttrValueEntity;
+import com.garcheng.gulimall.product.vo.BaseAttrs;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,5 +18,7 @@ import java.util.Map;
 public interface ProductAttrValueService extends IService<ProductAttrValueEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    void saveSpuAttrValue(Long spuId, List<BaseAttrs> baseAttrs);
 }
 
