@@ -3,40 +3,22 @@
  */
 package com.garcheng.gulimall.product.vo;
 
+import lombok.Data;
+
+import java.math.BigDecimal;
+
 /**
  * Auto-generated: 2023-08-29 10:37:20
  *
  * @author bejson.com (i@bejson.com)
  * @website http://www.bejson.com/java2pojo/
  */
+@Data
 public class MemberPrice {
 
-    private int id;
+    private Long id;
     private String name;
-    private int price;
+    private BigDecimal price;
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public int getPrice() {
-        return price;
-    }
 
 }
