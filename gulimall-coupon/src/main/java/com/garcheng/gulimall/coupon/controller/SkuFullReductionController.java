@@ -3,6 +3,7 @@ package com.garcheng.gulimall.coupon.controller;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.garcheng.gulimall.common.to.SkuReductTo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,6 +41,11 @@ public class SkuFullReductionController {
         return R.ok().put("page", page);
     }
 
+    @RequestMapping("/reduction/save")
+    public R saveReduction(@RequestBody SkuReductTo skuReductTo){
+        skuFullReductionService.saveReductionInfo(skuReductTo);
+        return R.ok();
+    }
 
     /**
      * 信息

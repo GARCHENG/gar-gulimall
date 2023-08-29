@@ -1,5 +1,6 @@
 package com.garcheng.gulimall.product.service.impl;
 
+import com.garcheng.gulimall.common.to.SkuReductTo;
 import com.garcheng.gulimall.common.to.SpuBoundsTo;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.product.entity.*;
@@ -133,6 +134,14 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     skuImagesService.saveBatch(skuImagesEntities);
                 }
                 //保存sku优惠信息
+                SkuReductTo skuReductTo = new SkuReductTo();
+                BeanUtils.copyProperties(sku,skuReductTo);
+                skuReductTo.setSkuId(skuId);
+                R r1 = couponFeignService.saveSkuReduction(skuReductTo);
+                if (r1.getCode() != 0){
+                    log.error("coupon服务远程调用失败~~~");
+                }
+
             });
         }
 
