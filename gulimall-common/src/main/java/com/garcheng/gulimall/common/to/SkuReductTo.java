@@ -10,6 +10,8 @@ public class SkuReductTo {
 
     private Long skuId;
 
+    private BigDecimal price;
+
     private BigDecimal discount;
 
     private Integer countStatus;

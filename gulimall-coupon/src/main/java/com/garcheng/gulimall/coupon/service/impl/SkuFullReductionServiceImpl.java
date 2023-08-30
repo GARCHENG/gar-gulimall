@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,14 +50,18 @@ public class SkuFullReductionServiceImpl extends ServiceImpl<SkuFullReductionDao
     public void saveReductionInfo(SkuReductTo skuReductTo) {
 
         SkuFullReductionEntity skuFullReductionEntity = new SkuFullReductionEntity();
-        BeanUtils.copyProperties(skuReductTo,skuFullReductionEntity);
-        save(skuFullReductionEntity);
+        BeanUtils.copyProperties(skuReductTo, skuFullReductionEntity);
+        if (skuFullReductionEntity.getFullPrice().compareTo(new BigDecimal("0")) == 1) {
+            save(skuFullReductionEntity);
+        }
 
         SkuLadderEntity skuLadderEntity = new SkuLadderEntity();
-        BeanUtils.copyProperties(skuReductTo,skuLadderEntity);
-        skuLadderEntity.setPrice(skuReductTo.getFullPrice().multiply(skuReductTo.getDiscount()));
+        BeanUtils.copyProperties(skuReductTo, skuLadderEntity);
+        skuLadderEntity.setPrice(skuReductTo.getPrice().multiply(skuReductTo.getDiscount()));
         skuLadderEntity.setAddOther(skuReductTo.getCountStatus());
-        skuLadderService.save(skuLadderEntity);
+        if (!(skuLadderEntity.getFullCount() <= 0)) {
+            skuLadderService.save(skuLadderEntity);
+        }
 
         List<MemberPrice> memberPrice = skuReductTo.getMemberPrice();
         if (memberPrice != null) {
@@ -68,6 +73,8 @@ public class SkuFullReductionServiceImpl extends ServiceImpl<SkuFullReductionDao
                 memberPriceEntity.setMemberPrice(obj.getPrice());
                 memberPriceEntity.setAddOther(1);
                 return memberPriceEntity;
+            }).filter(item -> {
+                return item.getMemberPrice().compareTo(new BigDecimal("0")) == 1;
             }).collect(Collectors.toList());
             memberPriceService.saveBatch(memberPriceEntityList);
         }

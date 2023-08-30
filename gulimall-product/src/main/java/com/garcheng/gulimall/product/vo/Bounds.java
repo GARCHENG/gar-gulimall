@@ -3,6 +3,8 @@
  */
 package com.garcheng.gulimall.product.vo;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 /**
@@ -11,6 +13,7 @@ import java.math.BigDecimal;
  * @author bejson.com (i@bejson.com)
  * @website http://www.bejson.com/java2pojo/
  */
+@Data
 public class Bounds {
 
     private BigDecimal buyBounds;

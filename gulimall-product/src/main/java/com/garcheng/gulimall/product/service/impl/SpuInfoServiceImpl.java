@@ -7,6 +7,7 @@ import com.garcheng.gulimall.product.entity.*;
 import com.garcheng.gulimall.product.feign.CouponFeignService;
 import com.garcheng.gulimall.product.service.*;
 import com.garcheng.gulimall.product.vo.*;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -107,7 +108,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 }
                 skuInfoEntity.setSkuDefaultImg(defaultImage);
                 skuInfoEntity.setSpuId(spuInfoEntity.getId());
-                skuInfoEntity.setPrice(sku.getFullPrice());
+                skuInfoEntity.setPrice(sku.getPrice());
                 skuInfoEntity.setBrandId(spuSaveVo.getBrandId());
                 skuInfoEntity.setCatalogId(spuSaveVo.getCatalogId());
                 skuInfoEntity.setSaleCount(0l);
@@ -130,9 +131,10 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                         BeanUtils.copyProperties(skuImage, skuImagesEntity);
                         skuImagesEntity.setSkuId(skuId);
                         return skuImagesEntity;
+                    }).filter(obj -> {
+                        return !StringUtils.isEmpty(obj.getImgUrl());
                     }).collect(Collectors.toList());
                     skuImagesService.saveBatch(skuImagesEntities);
-                    // TODO: 2023/8/29 处理imgurl为空的数据
                 }
                 //保存sku优惠信息
                 SkuReductTo skuReductTo = new SkuReductTo();
