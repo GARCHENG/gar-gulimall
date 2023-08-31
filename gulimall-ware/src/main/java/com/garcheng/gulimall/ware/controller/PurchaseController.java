@@ -44,6 +44,14 @@ public class PurchaseController {
         return R.ok().put("page", page);
     }
 
+    @RequestMapping("/received")
+    public R received(@RequestBody List<Long> purchaseIds){
+        purchaseService.recevied(purchaseIds);
+
+        return R.ok();
+    }
+
+
     @RequestMapping("/unreceive/list")
     public R unreceiveList(@RequestParam Map<String, Object> params){
         PageUtils page =  purchaseService.queryPageWithUnreceive(params);
