@@ -189,5 +189,10 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         return new PageUtils(page);
     }
 
+    @Override
+    public List<Long> getSearchableAttrIds(List<Long> attrIds) {
+        return baseMapper.getSearchableAttrIds(attrIds);
+    }
+
 
 }

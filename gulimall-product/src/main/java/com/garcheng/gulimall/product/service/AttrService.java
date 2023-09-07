@@ -6,6 +6,7 @@ import com.garcheng.gulimall.product.entity.AttrEntity;
 import com.garcheng.gulimall.product.vo.AttrRespVo;
 import com.garcheng.gulimall.product.vo.AttrVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,5 +29,7 @@ public interface AttrService extends IService<AttrEntity> {
     void updateAttr(AttrVo attr);
 
     PageUtils getNoRelationAttr(Map<String, Object> params, Long attrgroupId);
+
+    List<Long> getSearchableAttrIds(List<Long> attrIds);
 }
 

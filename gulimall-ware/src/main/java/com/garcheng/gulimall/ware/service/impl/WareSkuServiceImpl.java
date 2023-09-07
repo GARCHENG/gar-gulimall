@@ -1,8 +1,13 @@
 package com.garcheng.gulimall.ware.service.impl;
 
+import com.garcheng.gulimall.common.to.SkuStockTo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -35,6 +40,18 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public List<SkuStockTo> getSkusStock(List<Long> skuIds) {
+        List<SkuStockTo> stockToList = skuIds.stream().map(skuid -> {
+            SkuStockTo skuStockTo = new SkuStockTo();
+            skuStockTo.setSkuId(skuid);
+            skuStockTo.setStock(baseMapper.getStockBySkuId(skuid));
+            skuStockTo.setHasStock(skuStockTo.getStock()>0);
+            return skuStockTo;
+        }).collect(Collectors.toList());
+        return stockToList;
     }
 
 }

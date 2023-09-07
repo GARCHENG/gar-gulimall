@@ -1,9 +1,11 @@
 package com.garcheng.gulimall.ware.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.garcheng.gulimall.common.to.SkuStockTo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,6 +42,15 @@ public class WareSkuController {
 
         return R.ok().put("page", page);
     }
+
+    @RequestMapping("/hasstock")
+    public R<List<SkuStockTo>> getSkusStock(@RequestBody List<Long> skuIds){
+        List<SkuStockTo> skuStockTos = wareSkuService.getSkusStock(skuIds);
+        R<List<SkuStockTo>> r = new R<>();
+        r.setData(skuStockTos);
+        return r;
+    }
+
 
 
     /**

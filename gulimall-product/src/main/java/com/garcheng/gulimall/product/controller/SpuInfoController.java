@@ -53,6 +53,12 @@ public class SpuInfoController {
         return R.ok().put("spuInfo", spuInfo);
     }
 
+    @RequestMapping("/{spuId}/up")
+    public R spuUp(@PathVariable("spuId") Long spuId){
+        spuInfoService.upSpu(spuId);
+        return R.ok();
+    }
+
     /**
      * 保存
      */
