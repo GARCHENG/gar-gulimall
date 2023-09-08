@@ -14,6 +14,8 @@
 #    name: gulimall-product
 #  jackson:
 #    joda-date-time-format: yyyy-MM-dd HH:mm:ss
+#  thymeleaf:
+#    cache: false
 #
 #mybatis-plus:
 #  mapper-locations: classpath:/mapper/**/*.xml
@@ -23,15 +25,7 @@
 #
 #server:
 #  port: 7003
-
-#spring:
-#  cloud:
-#    alicloud:
-#      access-key: xxxxxxxxxxxxxxxx
-#      secret-key: xxxxxxxxxxxxxxxx
-#      oss:
-#        endpoint: xxxxxxxxxxxxxxxx
-
+#
 #logging:
 #  level:
 #    com.garcheng.gulimall.product: debug
