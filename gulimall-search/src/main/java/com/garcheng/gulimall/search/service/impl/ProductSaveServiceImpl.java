@@ -3,6 +3,7 @@ package com.garcheng.gulimall.search.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.garcheng.gulimall.common.to.es.SkuUpTo;
 import com.garcheng.gulimall.search.config.EsConfig;
+import com.garcheng.gulimall.search.constant.ElasticsearchConstant;
 import com.garcheng.gulimall.search.service.ProductSaveService;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -29,7 +30,7 @@ public class ProductSaveServiceImpl implements ProductSaveService {
     public Boolean saveEsModel(List<SkuUpTo> esSaveModels) throws IOException {
         BulkRequest bulkRequest = new BulkRequest();
         for (SkuUpTo esSaveModel : esSaveModels) {
-            IndexRequest indexRequest = new IndexRequest();
+            IndexRequest indexRequest = new IndexRequest(ElasticsearchConstant.PRODUCT_INDEX_NAME);
             indexRequest.id(esSaveModel.getSkuId().toString());
             String s = JSON.toJSONString(esSaveModel);
             indexRequest.source(s, XContentType.JSON);
@@ -41,10 +42,10 @@ public class ProductSaveServiceImpl implements ProductSaveService {
         boolean b = responses.hasFailures();
 
         if (b){
-            List<String> faultIds = Arrays.stream(responses.getItems()).map(obj -> {
+            List<String> ids = Arrays.stream(responses.getItems()).map(obj -> {
                 return obj.getId();
             }).collect(Collectors.toList());
-            log.error("es保存出错了，具体情况：{}",faultIds);
+            log.error("es保存完成：{}",ids);
         }
 
         return !b;

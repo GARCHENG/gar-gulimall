@@ -12,6 +12,6 @@ import java.util.List;
 @FeignClient("gulimall-search")
 public interface SearchFeignService {
 
-    @RequestMapping("productup")
+    @RequestMapping("search/save/productup")
     R upSpuInfo(@RequestBody List<SkuUpTo> esSaveModels);
 }

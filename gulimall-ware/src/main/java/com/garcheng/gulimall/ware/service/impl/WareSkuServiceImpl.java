@@ -48,7 +48,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             SkuStockTo skuStockTo = new SkuStockTo();
             skuStockTo.setSkuId(skuid);
             skuStockTo.setStock(baseMapper.getStockBySkuId(skuid));
-            skuStockTo.setHasStock(skuStockTo.getStock()>0);
+            skuStockTo.setHasStock(skuStockTo.getStock() != null && skuStockTo.getStock() > 0);
             return skuStockTo;
         }).collect(Collectors.toList());
         return stockToList;

@@ -16,7 +16,7 @@
         <result property="updateTime" column="update_time"/>
     </resultMap>
     <update id="updateSpuPublishStatus">
-        UPDATE pms_spu_info SET publish_status = #{code} ,create_time = NOW() WHERE spu_id  =  #{spuId};
+        UPDATE pms_spu_info SET publish_status = #{code} ,create_time = NOW() WHERE id  = #{spuId};
     </update>
 
 

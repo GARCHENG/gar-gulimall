@@ -1,5 +1,6 @@
 package com.garcheng.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.garcheng.gulimall.common.constant.ProductConstant;
 import com.garcheng.gulimall.common.to.SkuReductTo;
 import com.garcheng.gulimall.common.to.SkuStockTo;
@@ -226,8 +227,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         Map<Long, Boolean> stockMap = null;
 
         try {
-            R<List<SkuStockTo>> result = wareFeignService.getSkusStock(skuIds);
-            List<SkuStockTo> skuStockToList = result.getData();
+            R result = wareFeignService.getSkusStock(skuIds);
+            TypeReference<List<SkuStockTo>> typeReference = new TypeReference<List<SkuStockTo>>(){};
+            List<SkuStockTo> skuStockToList = result.getData(typeReference);
             stockMap = skuStockToList.stream()
                     .collect(Collectors.toMap(SkuStockTo::getSkuId,SkuStockTo::getHasStock));
         } catch (Exception e) {
@@ -249,6 +251,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     skuUpTo.setHasStock(false);
                 }
                 //商品新上架默认热度为0
+
+                // TODO: 2023/9/7 热度相关
                 skuUpTo.setHotScore(0L);
                 //查询品牌和分类
                 BrandEntity brandEntity = brandService.getById(sku.getBrandId());
