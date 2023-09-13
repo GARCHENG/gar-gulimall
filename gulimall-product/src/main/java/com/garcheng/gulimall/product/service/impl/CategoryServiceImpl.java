@@ -1,11 +1,14 @@
 package com.garcheng.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.garcheng.gulimall.product.service.CategoryBrandRelationService;
 import com.garcheng.gulimall.product.vo.CategoryLevel2Vo;
 import com.garcheng.gulimall.product.vo.CategoryLevel3Vo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,6 +30,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     private CategoryBrandRelationService categoryBrandRelationService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -76,6 +81,19 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Override
     public Map<String, List<CategoryLevel2Vo>> getCategoryJson() {
+        String categoryjson = (String) redisTemplate.opsForValue().get("categoryjson");
+        if (StringUtils.isEmpty(categoryjson)){
+            Map<String, List<CategoryLevel2Vo>> categoryMap = getCategoryMap();
+            String jsonString = JSON.toJSONString(categoryMap);
+            redisTemplate.opsForValue().set("categoryjson",jsonString);
+            return categoryMap;
+        }
+        Map<String, List<CategoryLevel2Vo>> resultMap = JSON.parseObject(categoryjson, new TypeReference<Map<String, List<CategoryLevel2Vo>>>() {
+        });
+        return resultMap;
+    }
+
+    private Map<String, List<CategoryLevel2Vo>> getCategoryMap() {
         List<CategoryEntity> allCategory = list();
         List<CategoryEntity> level1 = findCatByParentCId(allCategory, 0l);
         Map<String, List<CategoryLevel2Vo>> categoryJson = level1.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
