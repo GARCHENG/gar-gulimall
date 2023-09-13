@@ -1,7 +1,10 @@
 package com.garcheng.gulimall.product.service.impl;
 
 import com.garcheng.gulimall.product.service.CategoryBrandRelationService;
+import com.garcheng.gulimall.product.vo.CategoryLevel2Vo;
+import com.garcheng.gulimall.product.vo.CategoryLevel3Vo;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +72,38 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         if (!StringUtils.isEmpty(category.getName())){
             categoryBrandRelationService.updateCategoryDetail(category.getCatId(),category.getName());
         }
+    }
+
+    @Override
+    public Map<String, List<CategoryLevel2Vo>> getCategoryJson() {
+        List<CategoryEntity> allCategory = list();
+        List<CategoryEntity> level1 = findCatByParentCId(allCategory, 0l);
+        Map<String, List<CategoryLevel2Vo>> categoryJson = level1.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+            List<CategoryEntity> level2 = findCatByParentCId(allCategory, v.getCatId());
+            List<CategoryLevel2Vo> level2Vos = level2.stream().map(l2 -> {
+                CategoryLevel2Vo categoryLevel2Vo = new CategoryLevel2Vo();
+                BeanUtils.copyProperties(l2, categoryLevel2Vo);
+                List<CategoryEntity> catgoryLevel3 = findCatByParentCId(allCategory, l2.getCatId());
+                List<CategoryLevel3Vo> level3VoList = catgoryLevel3.stream().map(l3 -> {
+                    CategoryLevel3Vo categoryLevel3Vo = new CategoryLevel3Vo();
+                    BeanUtils.copyProperties(l3, categoryLevel3Vo);
+                    return categoryLevel3Vo;
+                }).collect(Collectors.toList());
+
+                categoryLevel2Vo.setCategoryLevel3Vos(level3VoList);
+                return categoryLevel2Vo;
+            }).collect(Collectors.toList());
+            return level2Vos;
+        }));
+
+        return categoryJson;
+    }
+
+    private List<CategoryEntity> findCatByParentCId(List<CategoryEntity> allCategory , Long parentId){
+        List<CategoryEntity> categoryEntities = allCategory.stream().filter(cat -> {
+            return cat.getParentCid() == parentId;
+        }).collect(Collectors.toList());
+        return categoryEntities;
     }
 
     private List getParentCatIdToList(Long catelogId, List<Long> categoryPath) {

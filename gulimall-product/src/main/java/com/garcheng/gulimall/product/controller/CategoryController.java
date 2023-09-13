@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.garcheng.gulimall.product.vo.CategoryLevel2Vo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -99,6 +100,12 @@ public class CategoryController {
 //		categoryService.removeByIds(Arrays.asList(catIds));
         categoryService.removeMenuByIds(Arrays.asList(catIds));
         return R.ok();
+    }
+
+
+    @RequestMapping("/category.json")
+    public Map<String,List<CategoryLevel2Vo>> getCategoryJson(){
+        return categoryService.getCategoryJson();
     }
 
 }
