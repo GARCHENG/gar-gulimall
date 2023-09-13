@@ -84,8 +84,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         String categoryjson = (String) redisTemplate.opsForValue().get("categoryjson");
         if (StringUtils.isEmpty(categoryjson)){
             Map<String, List<CategoryLevel2Vo>> categoryMap = getCategoryMap();
-            String jsonString = JSON.toJSONString(categoryMap);
-            redisTemplate.opsForValue().set("categoryjson",jsonString);
             return categoryMap;
         }
         Map<String, List<CategoryLevel2Vo>> resultMap = JSON.parseObject(categoryjson, new TypeReference<Map<String, List<CategoryLevel2Vo>>>() {
@@ -94,27 +92,39 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
     private Map<String, List<CategoryLevel2Vo>> getCategoryMap() {
-        List<CategoryEntity> allCategory = list();
-        List<CategoryEntity> level1 = findCatByParentCId(allCategory, 0l);
-        Map<String, List<CategoryLevel2Vo>> categoryJson = level1.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
-            List<CategoryEntity> level2 = findCatByParentCId(allCategory, v.getCatId());
-            List<CategoryLevel2Vo> level2Vos = level2.stream().map(l2 -> {
-                CategoryLevel2Vo categoryLevel2Vo = new CategoryLevel2Vo();
-                BeanUtils.copyProperties(l2, categoryLevel2Vo);
-                List<CategoryEntity> catgoryLevel3 = findCatByParentCId(allCategory, l2.getCatId());
-                List<CategoryLevel3Vo> level3VoList = catgoryLevel3.stream().map(l3 -> {
-                    CategoryLevel3Vo categoryLevel3Vo = new CategoryLevel3Vo();
-                    BeanUtils.copyProperties(l3, categoryLevel3Vo);
-                    return categoryLevel3Vo;
-                }).collect(Collectors.toList());
+        // TODO: 2023/9/13 本地锁只能锁当前进程 ，分布式情况下需使用分布式锁
+        synchronized (this){
+            String categoryjson = (String) redisTemplate.opsForValue().get("categoryjson");
+            if (StringUtils.isEmpty(categoryjson)){
+                System.out.println("查数据库");
+                List<CategoryEntity> allCategory = list();
+                List<CategoryEntity> level1 = findCatByParentCId(allCategory, 0l);
+                Map<String, List<CategoryLevel2Vo>> categoryJson = level1.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+                    List<CategoryEntity> level2 = findCatByParentCId(allCategory, v.getCatId());
+                    List<CategoryLevel2Vo> level2Vos = level2.stream().map(l2 -> {
+                        CategoryLevel2Vo categoryLevel2Vo = new CategoryLevel2Vo();
+                        BeanUtils.copyProperties(l2, categoryLevel2Vo);
+                        List<CategoryEntity> catgoryLevel3 = findCatByParentCId(allCategory, l2.getCatId());
+                        List<CategoryLevel3Vo> level3VoList = catgoryLevel3.stream().map(l3 -> {
+                            CategoryLevel3Vo categoryLevel3Vo = new CategoryLevel3Vo();
+                            BeanUtils.copyProperties(l3, categoryLevel3Vo);
+                            return categoryLevel3Vo;
+                        }).collect(Collectors.toList());
 
-                categoryLevel2Vo.setCategoryLevel3Vos(level3VoList);
-                return categoryLevel2Vo;
-            }).collect(Collectors.toList());
-            return level2Vos;
-        }));
+                        categoryLevel2Vo.setCategoryLevel3Vos(level3VoList);
+                        return categoryLevel2Vo;
+                    }).collect(Collectors.toList());
+                    return level2Vos;
+                }));
+                String jsonString = JSON.toJSONString(categoryJson);
+                redisTemplate.opsForValue().set("categoryjson",jsonString);
+                return categoryJson;
+            }else {
+                return JSON.parseObject(categoryjson, new TypeReference<Map<String, List<CategoryLevel2Vo>>>() {
+                });
+            }
+        }
 
-        return categoryJson;
     }
 
     private List<CategoryEntity> findCatByParentCId(List<CategoryEntity> allCategory , Long parentId){
