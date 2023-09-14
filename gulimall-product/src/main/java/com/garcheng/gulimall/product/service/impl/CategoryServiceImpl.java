@@ -6,6 +6,8 @@ import com.garcheng.gulimall.product.service.CategoryBrandRelationService;
 import com.garcheng.gulimall.product.vo.CategoryLevel2Vo;
 import com.garcheng.gulimall.product.vo.CategoryLevel3Vo;
 import org.apache.commons.lang.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisCallback;
@@ -36,6 +38,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     private CategoryBrandRelationService categoryBrandRelationService;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private RedissonClient redissonClient;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -135,14 +139,29 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             Thread.sleep(2000l);
             return getCategoryMapWithRedisLock();
         }
+    }
 
+    //使用redisson分布式锁
+    private Map<String, List<CategoryLevel2Vo>> getCategoryMapWithRedisson() throws InterruptedException {
+        RLock mylock = redissonClient.getLock("mylock");
+        mylock.lock();//阻塞等待
+        //锁的自动续期（看门狗），默认加的锁为30秒
+        Map<String, List<CategoryLevel2Vo>> categoryMap = null;
+            try {
+                categoryMap = getCategoryMap();
+            } catch (Exception e) {
+
+            } finally {
+                mylock.unlock();
+            }
+            return categoryMap;
     }
 
     private Map<String, List<CategoryLevel2Vo>> getCategoryMap() throws InterruptedException {
         Map<String, List<CategoryLevel2Vo>> categoryMap;
         String categoryjson = (String) redisTemplate.opsForValue().get("categoryjson");
         if (StringUtils.isEmpty(categoryjson)) {
-            System.out.println("准备查数据库，休眠");
+//            System.out.println("准备查数据库，休眠");
             categoryMap = getCategoryInDB();
         } else {
             categoryMap = JSON.parseObject(categoryjson, new TypeReference<Map<String, List<CategoryLevel2Vo>>>() {
