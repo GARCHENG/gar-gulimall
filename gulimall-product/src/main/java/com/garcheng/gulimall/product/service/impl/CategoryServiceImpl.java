@@ -113,33 +113,40 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     //使用分布式锁
     private Map<String, List<CategoryLevel2Vo>> getCategoryMapWithRedisLock() throws InterruptedException {
         String token = UUID.randomUUID().toString();
-        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", token, 300, TimeUnit.SECONDS);
+        Boolean lock = redisTemplate.opsForValue().setIfAbsent("lock", token, 30, TimeUnit.SECONDS);
         Map<String, List<CategoryLevel2Vo>> categoryMap = null;
         if (lock) {
-            categoryMap = getCategoryMap();
-            String script = "if redis.call(\"get\",KEYS[1]) == ARGV[1]\n" +
-                    "then\n" +
-                    "    return redis.call(\"del\",KEYS[1])\n" +
-                    "else\n" +
-                    "    return 0\n" +
-                    "end";
-            redisTemplate.execute(new DefaultRedisScript<Long>(script,Long.class),Arrays.asList("lock"),token);
+            try {
+                categoryMap = getCategoryMap();
+            } catch (Exception e) {
+
+            } finally {
+                String script = "if redis.call(\"get\",KEYS[1]) == ARGV[1]\n" +
+                        "then\n" +
+                        "    return redis.call(\"del\",KEYS[1])\n" +
+                        "else\n" +
+                        "    return 0\n" +
+                        "end";
+                redisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Arrays.asList("lock"), token);
+            }
             return categoryMap;
         } else {
             System.out.println("休眠中~~~");
-            Thread.sleep(200l);
-            return getCategoryMapWithLocalLock();
+            Thread.sleep(2000l);
+            return getCategoryMapWithRedisLock();
         }
 
     }
 
-    private Map<String, List<CategoryLevel2Vo>> getCategoryMap() {
+    private Map<String, List<CategoryLevel2Vo>> getCategoryMap() throws InterruptedException {
         Map<String, List<CategoryLevel2Vo>> categoryMap;
         String categoryjson = (String) redisTemplate.opsForValue().get("categoryjson");
         if (StringUtils.isEmpty(categoryjson)) {
+            System.out.println("准备查数据库，休眠");
             categoryMap = getCategoryInDB();
         } else {
-            categoryMap = JSON.parseObject(categoryjson, new TypeReference<Map<String, List<CategoryLevel2Vo>>>() {});
+            categoryMap = JSON.parseObject(categoryjson, new TypeReference<Map<String, List<CategoryLevel2Vo>>>() {
+            });
         }
         return categoryMap;
     }
