@@ -27,6 +27,6 @@ public interface CategoryService extends IService<CategoryEntity> {
 
     void updateDetailById(CategoryEntity category);
 
-    Map<String, List<CategoryLevel2Vo>> getCategoryJson();
+    Map<String, List<CategoryLevel2Vo>> getCategoryJson() throws InterruptedException;
 }
 

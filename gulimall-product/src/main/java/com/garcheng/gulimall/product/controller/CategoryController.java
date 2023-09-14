@@ -104,7 +104,7 @@ public class CategoryController {
 
 
     @RequestMapping("/category.json")
-    public Map<String,List<CategoryLevel2Vo>> getCategoryJson(){
+    public Map<String,List<CategoryLevel2Vo>> getCategoryJson() throws InterruptedException {
         return categoryService.getCategoryJson();
     }
 
