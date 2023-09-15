@@ -13,8 +13,8 @@ public class MyRedissonConfig {
     public RedissonClient redisson(){
         Config config = new Config();
         config.useSingleServer()
-//                .setAddress("redis://192.168.137.158:6379");
-                .setAddress("redis://gulimall.com:6379");
+                .setAddress("redis://192.168.137.158:6379");
+//                .setAddress("redis://gulimall.com:6379");
 
         RedissonClient redisson = Redisson.create(config);
         return redisson;

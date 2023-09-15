@@ -108,4 +108,9 @@ public class CategoryController {
         return categoryService.getCategoryJson();
     }
 
+    @RequestMapping("/categorylevel1.json")
+    public List<CategoryEntity> getCategoryLevel1s(){
+        return categoryService.getCategoryLevel1s();
+    }
+
 }

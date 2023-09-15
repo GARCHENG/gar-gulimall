@@ -10,6 +10,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -100,6 +101,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return resultMap;
     }
 
+    @Override
+    @Cacheable(value = "category",key = "#root.methodName")
+    public List<CategoryEntity> getCategoryLevel1s() {
+        System.out.println("查询数据库level1");
+        List<CategoryEntity> level1 = list(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
+        return level1;
+    }
+
 
     private Map<String, List<CategoryLevel2Vo>> getCategoryMapWithLocalLock() {
         synchronized (this) {
@@ -144,7 +153,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     //使用redisson分布式锁
     private Map<String, List<CategoryLevel2Vo>> getCategoryMapWithRedisson() throws InterruptedException {
         RLock mylock = redissonClient.getLock("mylock");
-        mylock.lock();//阻塞等待
+//        mylock.lock();//阻塞等待 ，会有看门狗机制
+        mylock.lock(30,TimeUnit.SECONDS);//若设定超时时间，则不会有看门狗，不会自动续期
         //锁的自动续期（看门狗），默认加的锁为30秒
         Map<String, List<CategoryLevel2Vo>> categoryMap = null;
             try {
