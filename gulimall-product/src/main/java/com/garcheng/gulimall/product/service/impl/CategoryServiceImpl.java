@@ -102,7 +102,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
     @Override
-    @Cacheable(value = "category",key = "#root.methodName")
+    @Cacheable(value = {"category"},key = "#root.methodName")
     public List<CategoryEntity> getCategoryLevel1s() {
         System.out.println("查询数据库level1");
         List<CategoryEntity> level1 = list(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));

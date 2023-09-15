@@ -22,6 +22,10 @@
 #    type: redis
 #    redis:
 #      time-to-live: 3600000
+#      key-prefix: CACHE_
+#      use-key-prefix: true
+#      #防止缓存穿透
+#      cache-null-values: true
 #
 #mybatis-plus:
 #  mapper-locations: classpath:/mapper/**/*.xml
