@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <title>Document</title>
   <link rel="stylesheet" href="/static/index/css/swiper-3.4.2.min.css">
   <link rel="stylesheet" href="/static/index/css/GL.css">
-  <script src="/static//static/index/js/jquery-3.1.1.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/static/index/js/jquery-3.1.1.min.js" type="text/javascript" charset="utf-8"></script>
 
   <script src="/static/index/js/swiper-3.4.2.jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
@@ -22,7 +22,7 @@
       <img src="/static/index/img/top_find_logo.png" alt="">
       <div class="input_find">
         <input type="text" placeholder="卸妆水" />
-        <span style="background: url(../staticindex/img/img_12.png) 0 -1px;"></span>
+        <span style="background: url(/static/index/img/img_12.png) 0 -1px;"></span>
         <a href="/static/#"><img src="/static/index/img/img_09.png" /></a>
       </div>
     </div>
@@ -113,9 +113,9 @@
     <div class="header_sous">
       <div class="header_form">
         <input id="searchText" type="text" placeholder="" />
-        <span style="background: url(../staticindex/img/img_12.png) 0 -1px;"></span>
+        <span style="background: url(/static/index/img/img_12.png) 0 -1px;"></span>
         <!--<button><i class="glyphicon"></i></button>-->
-        <a href="/static/#" ><img src="/static/index/img/img_09.png" onclick="search()" /></a>
+        <a href="javascript:search();" ><img src="/static/index/img/img_09.png"  /></a>
       </div>
       <div class="header_ico">
         <div class="header_gw">
@@ -664,7 +664,7 @@
 <script type="text/javascript">
   function search() {
       var keyword=$("#searchText").val()
-      window.location.href="/static/http://search.gulimall.com/search.html?keyword="+keyword;
+      window.location.href="http://search.gulimall.com/list.html?keyword="+keyword;
   }
 
 </script>
