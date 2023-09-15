@@ -1,7 +1,7 @@
 package com.garcheng.gulimall.search.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.garcheng.gulimall.common.to.es.SkuUpTo;
+import com.garcheng.gulimall.common.to.es.EsModel;
 import com.garcheng.gulimall.search.config.EsConfig;
 import com.garcheng.gulimall.search.constant.ElasticsearchConstant;
 import com.garcheng.gulimall.search.service.ProductSaveService;
@@ -27,9 +27,9 @@ public class ProductSaveServiceImpl implements ProductSaveService {
     private RestHighLevelClient restHighLevelClient;
 
     @Override
-    public Boolean saveEsModel(List<SkuUpTo> esSaveModels) throws IOException {
+    public Boolean saveEsModel(List<EsModel> esSaveModels) throws IOException {
         BulkRequest bulkRequest = new BulkRequest();
-        for (SkuUpTo esSaveModel : esSaveModels) {
+        for (EsModel esSaveModel : esSaveModels) {
             IndexRequest indexRequest = new IndexRequest(ElasticsearchConstant.PRODUCT_INDEX_NAME);
             indexRequest.id(esSaveModel.getSkuId().toString());
             String s = JSON.toJSONString(esSaveModel);

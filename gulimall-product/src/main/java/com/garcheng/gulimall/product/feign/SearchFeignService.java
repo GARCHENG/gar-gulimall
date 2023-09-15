@@ -1,6 +1,6 @@
 package com.garcheng.gulimall.product.feign;
 
-import com.garcheng.gulimall.common.to.es.SkuUpTo;
+import com.garcheng.gulimall.common.to.es.EsModel;
 import com.garcheng.gulimall.common.utils.R;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,5 +13,5 @@ import java.util.List;
 public interface SearchFeignService {
 
     @RequestMapping("search/save/productup")
-    R upSpuInfo(@RequestBody List<SkuUpTo> esSaveModels);
+    R upSpuInfo(@RequestBody List<EsModel> esSaveModels);
 }

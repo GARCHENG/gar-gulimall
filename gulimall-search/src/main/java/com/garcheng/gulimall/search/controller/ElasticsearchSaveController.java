@@ -1,7 +1,7 @@
 package com.garcheng.gulimall.search.controller;
 
 import com.garcheng.gulimall.common.exception.BaseCodeEnum;
-import com.garcheng.gulimall.common.to.es.SkuUpTo;
+import com.garcheng.gulimall.common.to.es.EsModel;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.search.service.ProductSaveService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class ElasticsearchSaveController {
     private ProductSaveService productSaveService;
 
     @RequestMapping("productup")
-    public R upSpuInfo(@RequestBody List<SkuUpTo> esSaveModels)  {
+    public R upSpuInfo(@RequestBody List<EsModel> esSaveModels)  {
         Boolean isSuccess = null;
         try {
             isSuccess = productSaveService.saveEsModel(esSaveModels);

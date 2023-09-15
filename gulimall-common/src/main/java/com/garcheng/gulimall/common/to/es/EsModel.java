@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class SkuUpTo {
+public class EsModel {
 
     private Long skuId;
 

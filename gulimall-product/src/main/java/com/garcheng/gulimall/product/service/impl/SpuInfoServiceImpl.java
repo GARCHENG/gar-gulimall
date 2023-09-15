@@ -5,7 +5,7 @@ import com.garcheng.gulimall.common.constant.ProductConstant;
 import com.garcheng.gulimall.common.to.SkuReductTo;
 import com.garcheng.gulimall.common.to.SkuStockTo;
 import com.garcheng.gulimall.common.to.SpuBoundsTo;
-import com.garcheng.gulimall.common.to.es.SkuUpTo;
+import com.garcheng.gulimall.common.to.es.EsModel;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.product.entity.*;
 import com.garcheng.gulimall.product.feign.CouponFeignService;
@@ -13,7 +13,6 @@ import com.garcheng.gulimall.product.feign.SearchFeignService;
 import com.garcheng.gulimall.product.feign.WareFeignService;
 import com.garcheng.gulimall.product.service.*;
 import com.garcheng.gulimall.product.vo.*;
-import com.sun.xml.internal.bind.v2.TODO;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -211,8 +210,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             return idsSet.contains(obj.getAttrId());
         }).collect(Collectors.toList());
 
-        List<SkuUpTo.attr> attrs = attrValueEntityList.stream().map(obj -> {
-            SkuUpTo.attr attr = new SkuUpTo.attr();
+        List<EsModel.attr> attrs = attrValueEntityList.stream().map(obj -> {
+            EsModel.attr attr = new EsModel.attr();
             BeanUtils.copyProperties(obj, attr);
             return attr;
         }).collect(Collectors.toList());
@@ -238,8 +237,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         if (skus != null) {
             Map<Long, Boolean> finalStockMap = stockMap;
-            List<SkuUpTo> esModels = skus.stream().map(sku -> {
-                SkuUpTo skuUpTo = new SkuUpTo();
+            List<EsModel> esModels = skus.stream().map(sku -> {
+                EsModel skuUpTo = new EsModel();
                 BeanUtils.copyProperties(sku, skuUpTo);
                 //skuPrice,skuImg hasStock hotScore brandName brandImg;catalogName attrs
                 skuUpTo.setSkuPrice(sku.getPrice());
