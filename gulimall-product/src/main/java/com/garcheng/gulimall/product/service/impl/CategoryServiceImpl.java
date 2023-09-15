@@ -10,7 +10,9 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -80,6 +82,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return categoryPath.toArray(new Long[categoryPath.size()]);
     }
 
+//    @CacheEvict(value = {"category"},key = "'getCategoryLevel1s'")
+//    @Caching(evict = {
+//            @CacheEvict(value = {"category"},key = "'getCategoryLevel1s'")
+//            @CacheEvict(value = {"category"},key = "'getCategoryJson'")
+//    })
+    @CacheEvict(value = {"category"},allEntries = true)
     @Override
     public void updateDetailById(CategoryEntity category) {
         updateById(category);
@@ -88,8 +96,32 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         }
     }
 
+    @Cacheable(value = {"category"},key = "#root.methodName" ,sync = true)
     @Override
     public Map<String, List<CategoryLevel2Vo>> getCategoryJson() throws InterruptedException {
+        List<CategoryEntity> allCategory = list();
+        List<CategoryEntity> level1 = findCatByParentCId(allCategory, 0l);
+        Map<String, List<CategoryLevel2Vo>> categoryJson = level1.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+            List<CategoryEntity> level2 = findCatByParentCId(allCategory, v.getCatId());
+            List<CategoryLevel2Vo> level2Vos = level2.stream().map(l2 -> {
+                CategoryLevel2Vo categoryLevel2Vo = new CategoryLevel2Vo();
+                BeanUtils.copyProperties(l2, categoryLevel2Vo);
+                List<CategoryEntity> catgoryLevel3 = findCatByParentCId(allCategory, l2.getCatId());
+                List<CategoryLevel3Vo> level3VoList = catgoryLevel3.stream().map(l3 -> {
+                    CategoryLevel3Vo categoryLevel3Vo = new CategoryLevel3Vo();
+                    BeanUtils.copyProperties(l3, categoryLevel3Vo);
+                    return categoryLevel3Vo;
+                }).collect(Collectors.toList());
+
+                categoryLevel2Vo.setCategoryLevel3Vos(level3VoList);
+                return categoryLevel2Vo;
+            }).collect(Collectors.toList());
+            return level2Vos;
+        }));
+        return categoryJson;
+    }
+
+    private Map<String, List<CategoryLevel2Vo>> getCategoryJsonBase() throws InterruptedException {
         String categoryjson = (String) redisTemplate.opsForValue().get("categoryjson");
         if (StringUtils.isEmpty(categoryjson)) {
 //            Map<String, List<CategoryLevel2Vo>> categoryMap = getCategoryMapWithLocalLock();
@@ -102,7 +134,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
     @Override
-    @Cacheable(value = {"category"},key = "#root.methodName")
+    @Cacheable(value = {"category"},key = "#root.methodName",sync = true)
+    //key 如果是string，则要加上单引号
     public List<CategoryEntity> getCategoryLevel1s() {
         System.out.println("查询数据库level1");
         List<CategoryEntity> level1 = list(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
