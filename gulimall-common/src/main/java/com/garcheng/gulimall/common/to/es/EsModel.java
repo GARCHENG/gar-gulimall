@@ -39,6 +39,8 @@ public class EsModel {
     @Data
     public static class attr{
 
+        private Long attrId;
+
         private String attrName;
 
         private String attrValue;
