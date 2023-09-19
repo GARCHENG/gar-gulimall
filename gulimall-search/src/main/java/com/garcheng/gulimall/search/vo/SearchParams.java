@@ -22,7 +22,7 @@ public class SearchParams {
 
     private List<String> attrs;
 
-    private Integer pageNum;
+    private Integer pageNum =  1;
 
 
 }
