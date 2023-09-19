@@ -15,6 +15,9 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -106,7 +109,6 @@ public class MallSearchServiceImpl implements MallSearchService {
 
         }
 
-
         searchSourceBuilder.query(boolQueryBuilder);
 
         //sort=skuPrice_desc
@@ -127,9 +129,24 @@ public class MallSearchServiceImpl implements MallSearchService {
             searchSourceBuilder.highlighter(highlighter);
         }
 
+        //聚合dsl
+
+        //分类聚合
+        TermsAggregationBuilder catelog_name_agg = AggregationBuilders.terms("catelog_name_agg").field("catalogName").size(1);
+        searchSourceBuilder.aggregation(AggregationBuilders.terms("catelog_agg").field("catalogId").size(50).subAggregation(catelog_name_agg));
+        //品牌聚合
+        TermsAggregationBuilder brand_name_agg = AggregationBuilders.terms("brand_name_agg").field("brandName").size(1);
+        TermsAggregationBuilder brand_image_agg = AggregationBuilders.terms("brand_image_agg").field("brandImg").size(1);
+        searchSourceBuilder.aggregation(AggregationBuilders.terms("brand_agg").field("brandId").size(50).subAggregation(brand_name_agg).subAggregation(brand_image_agg));
+        //属性聚合
+        NestedAggregationBuilder nestedAggregationBuilder = AggregationBuilders.nested("attr_agg", "attrs");
+        TermsAggregationBuilder attr_name_agg = AggregationBuilders.terms("attr_name_agg").field("attrs.attrName").size(1);
+        TermsAggregationBuilder attr_value_agg = AggregationBuilders.terms("attr_value_agg").field("attrs.attrValue").size(50);
+        nestedAggregationBuilder.subAggregation(AggregationBuilders.terms("attr_id_agg").field("attrs.attrId").size(50).subAggregation(attr_name_agg).subAggregation(attr_value_agg));
+        searchSourceBuilder.aggregation(nestedAggregationBuilder);
+
 
         searchRequest.source(searchSourceBuilder);
-
         System.out.println("DSL构建语句："+searchSourceBuilder.toString());
 
         return searchRequest;
