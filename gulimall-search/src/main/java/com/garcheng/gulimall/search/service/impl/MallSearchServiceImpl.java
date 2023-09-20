@@ -163,12 +163,19 @@ public class MallSearchServiceImpl implements MallSearchService {
 
         //封装esmodel
         List<EsModel> products = new ArrayList<>();
-        for (SearchHit hit : hits.getHits()) {
-            String sourceAsString = hit.getSourceAsString();
-            EsModel esModel = JSON.parseObject(sourceAsString, EsModel.class);
-            products.add(esModel);
+        if (hits.getHits()!=null && hits.getHits().length > 0){
+            for (SearchHit hit : hits.getHits()) {
+                String sourceAsString = hit.getSourceAsString();
+                EsModel esModel = JSON.parseObject(sourceAsString, EsModel.class);
+                //高亮
+                if (!StringUtils.isEmpty(Params.getKeyword())){
+                    String skuTitle = hit.getHighlightFields().get("skuTitle").fragments()[0].string();
+                    esModel.setSkuTitle(skuTitle);
+                }
+                products.add(esModel);
+            }
+            result.setProducts(products);
         }
-        result.setProducts(products);
 
         result.setPageNum(Params.getPageNum());
         result.setTotal(hits.getTotalHits().value);
