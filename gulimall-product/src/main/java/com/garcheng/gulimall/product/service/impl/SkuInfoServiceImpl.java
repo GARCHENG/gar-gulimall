@@ -1,6 +1,14 @@
 package com.garcheng.gulimall.product.service.impl;
 
+import com.garcheng.gulimall.product.entity.SkuImagesEntity;
+import com.garcheng.gulimall.product.entity.SpuInfoDescEntity;
+import com.garcheng.gulimall.product.service.AttrGroupService;
+import com.garcheng.gulimall.product.service.SkuImagesService;
+import com.garcheng.gulimall.product.service.SpuInfoDescService;
+import com.garcheng.gulimall.product.vo.SkuItemVo;
+import com.garcheng.gulimall.product.vo.SpuItemAttrGroupVo;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -20,6 +28,13 @@ import com.garcheng.gulimall.product.service.SkuInfoService;
 
 @Service("skuInfoService")
 public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> implements SkuInfoService {
+
+    @Autowired
+    private SkuImagesService skuImagesService;
+    @Autowired
+    private SpuInfoDescService spuInfoDescService;
+    @Autowired
+    private AttrGroupService attrGroupService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -68,6 +83,27 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
     public List<SkuInfoEntity> getSkusBySpuId(Long spuId) {
         List<SkuInfoEntity> skus = list(new QueryWrapper<SkuInfoEntity>().eq("spu_id", spuId));
         return skus;
+    }
+
+    @Override
+    public SkuItemVo item(Long skuId) {
+        SkuItemVo skuItemVo = new SkuItemVo();
+
+        SkuInfoEntity skuInfoEntity = getById(skuId);
+        skuItemVo.setInfo(skuInfoEntity);
+
+        List<SkuImagesEntity> skuImagesEntities = skuImagesService.getImagesBySkuId(skuId);
+        skuItemVo.setSkuImages(skuImagesEntities);
+
+        SpuInfoDescEntity spuInfoDesc = spuInfoDescService.getById(skuInfoEntity.getSpuId());
+        skuItemVo.setDesp(spuInfoDesc);
+
+//        skuItemVo.setSaleAttrVos();
+
+        List<SpuItemAttrGroupVo> attrGroupVos = attrGroupService.findAttrGroupWithAttrBySpuIdAndCatelogId(skuInfoEntity.getSpuId(),skuInfoEntity.getCatalogId());
+        skuItemVo.setAttrGroupVos(attrGroupVos);
+
+        return skuItemVo;
     }
 
 }

@@ -1,5 +1,7 @@
 package com.garcheng.gulimall.product;
 
+import com.garcheng.gulimall.product.dao.AttrGroupDao;
+import com.garcheng.gulimall.product.vo.SpuItemAttrGroupVo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.FileInputStream;
+import java.util.List;
 
 
 @Slf4j
@@ -18,6 +21,8 @@ public class GulimallProductApplicationTests {
 
     @Autowired
     private RedissonClient redissonClient;
+    @Autowired
+    private AttrGroupDao attrGroupDao;
 
     @Test
     public void contextLoads() throws Exception {
@@ -62,6 +67,11 @@ public class GulimallProductApplicationTests {
     @Test
     public void test(){
         System.out.println(redissonClient);
+    }
+
+    @Test
+    public void test1(){
+        List<SpuItemAttrGroupVo> attrGroupWithAttrBySpuIdAndCatelogId = attrGroupDao.findAttrGroupWithAttrBySpuIdAndCatelogId(1l, 225l);
     }
 
 }
