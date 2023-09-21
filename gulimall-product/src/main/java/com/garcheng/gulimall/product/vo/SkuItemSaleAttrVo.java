@@ -8,5 +8,6 @@ import java.util.List;
 public class SkuItemSaleAttrVo {
     private Long attrId;
     private String attrName;
-    private String attrValue;
+//    private String attrValue;
+    private List<SaleAttrValueSkuIdsVo> saleAttrValueSkuIdsVoList;
 }
