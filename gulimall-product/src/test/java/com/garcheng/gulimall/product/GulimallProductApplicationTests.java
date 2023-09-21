@@ -1,6 +1,8 @@
 package com.garcheng.gulimall.product;
 
 import com.garcheng.gulimall.product.dao.AttrGroupDao;
+import com.garcheng.gulimall.product.dao.SkuSaleAttrValueDao;
+import com.garcheng.gulimall.product.vo.SkuItemSaleAttrVo;
 import com.garcheng.gulimall.product.vo.SpuItemAttrGroupVo;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -23,6 +25,8 @@ public class GulimallProductApplicationTests {
     private RedissonClient redissonClient;
     @Autowired
     private AttrGroupDao attrGroupDao;
+    @Autowired
+    private SkuSaleAttrValueDao skuSaleAttrValueDao;
 
     @Test
     public void contextLoads() throws Exception {
@@ -72,6 +76,11 @@ public class GulimallProductApplicationTests {
     @Test
     public void test1(){
         List<SpuItemAttrGroupVo> attrGroupWithAttrBySpuIdAndCatelogId = attrGroupDao.findAttrGroupWithAttrBySpuIdAndCatelogId(1l, 225l);
+    }
+
+    @Test
+    public void test3(){
+        List<SkuItemSaleAttrVo> saleAttrVosBySpuId = skuSaleAttrValueDao.findSaleAttrVosBySpuId(1l);
     }
 
 }

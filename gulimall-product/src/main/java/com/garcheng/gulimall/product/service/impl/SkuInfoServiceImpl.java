@@ -2,9 +2,8 @@ package com.garcheng.gulimall.product.service.impl;
 
 import com.garcheng.gulimall.product.entity.SkuImagesEntity;
 import com.garcheng.gulimall.product.entity.SpuInfoDescEntity;
-import com.garcheng.gulimall.product.service.AttrGroupService;
-import com.garcheng.gulimall.product.service.SkuImagesService;
-import com.garcheng.gulimall.product.service.SpuInfoDescService;
+import com.garcheng.gulimall.product.service.*;
+import com.garcheng.gulimall.product.vo.SkuItemSaleAttrVo;
 import com.garcheng.gulimall.product.vo.SkuItemVo;
 import com.garcheng.gulimall.product.vo.SpuItemAttrGroupVo;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +22,6 @@ import com.garcheng.gulimall.common.utils.Query;
 
 import com.garcheng.gulimall.product.dao.SkuInfoDao;
 import com.garcheng.gulimall.product.entity.SkuInfoEntity;
-import com.garcheng.gulimall.product.service.SkuInfoService;
 
 
 @Service("skuInfoService")
@@ -35,6 +33,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
     private SpuInfoDescService spuInfoDescService;
     @Autowired
     private AttrGroupService attrGroupService;
+    @Autowired
+    private SkuSaleAttrValueService skuSaleAttrValueService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -98,7 +98,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         SpuInfoDescEntity spuInfoDesc = spuInfoDescService.getById(skuInfoEntity.getSpuId());
         skuItemVo.setDesp(spuInfoDesc);
 
-//        skuItemVo.setSaleAttrVos();
+        List<SkuItemSaleAttrVo> saleAttrVos = skuSaleAttrValueService.findSaleAttrVosBySpuId(skuInfoEntity.getSpuId());
+        skuItemVo.setSaleAttrVos(saleAttrVos);
 
         List<SpuItemAttrGroupVo> attrGroupVos = attrGroupService.findAttrGroupWithAttrBySpuIdAndCatelogId(skuInfoEntity.getSpuId(),skuInfoEntity.getCatalogId());
         skuItemVo.setAttrGroupVos(attrGroupVos);

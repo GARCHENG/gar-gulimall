@@ -13,5 +13,18 @@
         <result property="attrSort" column="attr_sort"/>
     </resultMap>
 
+    <select id="findSaleAttrVosBySpuId" resultType="com.garcheng.gulimall.product.vo.SkuItemSaleAttrVo">
+        SELECT
+        ssav.attr_id,
+        ssav.attr_name,
+        GROUP_CONCAT(DISTINCT ssav.attr_value) attr_value
+        FROM
+        pms_sku_info si
+        LEFT JOIN pms_sku_sale_attr_value ssav
+        ON si.sku_id = ssav.sku_id
+        WHERE si.spu_id =  #{spuId}
+        GROUP BY ssav.attr_id
+    </select>
+
 
 </mapper>
