@@ -45,6 +45,11 @@
 #          predicates:
 #            - Host=gulimall.com,item.gulimall.com
 #
+#        - id: auth_host_route
+#          uri: lb://gulimall-auth-server
+#          predicates:
+#            - Host=auth.gulimall.com
+#
 #        - id: search_host_route
 #          uri: lb://gulimall-search
 #          predicates:

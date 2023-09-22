@@ -1,49 +1,49 @@
-spring:
-  datasource:
-    #MySQL配置
-    driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://192.168.153.128:3306/gulimall_pms?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: 123456
-
-  cloud:
-    nacos:
-      discovery:
-        server-addr: 127.0.0.1:8848
-  application:
-    name: gulimall-product
-  jackson:
-    joda-date-time-format: yyyy-MM-dd HH:mm:ss
-  thymeleaf:
-    cache: false
-  redis:
-    host: gulimall.com
-  cache:
-    type: redis
-    redis:
-      time-to-live: 3600000
-      key-prefix: CACHE_
-      use-key-prefix: true
-      #防止缓存穿透
-      cache-null-values: true
-
-mybatis-plus:
-  mapper-locations: classpath:/mapper/**/*.xml
-  global-config:
-    db-config:
-      id-type: auto
-
-server:
-  port: 7003
-
-logging:
-  level:
-    com.garcheng.gulimall.product: debug
-
-gulimall:
-  thread:
-    corePoolSize: 20
-    maximumPoolSize: 100
-    keepAliveTime: 10
-    queueSize: 10000
-
+#spring:
+#  datasource:
+#    #MySQL配置
+#    driverClassName: com.mysql.jdbc.Driver
+#    url: jdbc:mysql://192.168.153.128:3306/gulimall_pms?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+#    username: root
+#    password: 123456
+#
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: 127.0.0.1:8848
+#  application:
+#    name: gulimall-product
+#  jackson:
+#    joda-date-time-format: yyyy-MM-dd HH:mm:ss
+#  thymeleaf:
+#    cache: false
+#  redis:
+#    host: gulimall.com
+#  cache:
+#    type: redis
+#    redis:
+#      time-to-live: 3600000
+#      key-prefix: CACHE_
+#      use-key-prefix: true
+#      #防止缓存穿透
+#      cache-null-values: true
+#
+#mybatis-plus:
+#  mapper-locations: classpath:/mapper/**/*.xml
+#  global-config:
+#    db-config:
+#      id-type: auto
+#
+#server:
+#  port: 7003
+#
+#logging:
+#  level:
+#    com.garcheng.gulimall.product: debug
+#
+#gulimall:
+#  thread:
+#    corePoolSize: 20
+#    maximumPoolSize: 100
+#    keepAliveTime: 10
+#    queueSize: 10000
+#
