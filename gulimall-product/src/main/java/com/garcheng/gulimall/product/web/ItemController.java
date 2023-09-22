@@ -7,7 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.concurrent.ExecutionException;
 
 @Controller
 public class ItemController {
@@ -16,7 +17,7 @@ public class ItemController {
     private SkuInfoService skuInfoService;
 
     @GetMapping("/{skuId}.html")
-    public String itemHome(@PathVariable("skuId") Long skuId, Model model){
+    public String itemHome(@PathVariable("skuId") Long skuId, Model model) throws ExecutionException, InterruptedException {
         SkuItemVo skuItemVo = skuInfoService.item(skuId);
         model.addAttribute("item",skuItemVo);
         return "item";
