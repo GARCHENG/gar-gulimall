@@ -610,7 +610,7 @@
                         <dl>
                             <dt>选择[[${saleAttr.attrName}]]</dt>
                             <dd th:each="saleAttrSkuIds:${saleAttr.saleAttrValueSkuIdsVoList} ">
-                                <a th:text="${saleAttrSkuIds.attrValue}" th:attr="skuIds=${saleAttrSkuIds.skuIds},class=${#lists.contains(#strings.listSplit(saleAttrSkuIds.skuIds,',') , item.info.skuId.toString())? 'sku_attr_value checked':'sku_attr_value'}">
+                                <a class="sku_attr_value" th:text="${saleAttrSkuIds.attrValue}" th:attr="skuIds=${saleAttrSkuIds.skuIds},class=${#lists.contains(#strings.listSplit(saleAttrSkuIds.skuIds,',') , item.info.skuId.toString())? 'sku_attr_value checked':'sku_attr_value'}">
 <!--                                    <img src="/static/item/img/59ddfcb1Nc3edb8f1.jpg"/> -->
                                     摩卡金
                                 </a>
@@ -1560,8 +1560,10 @@
 
     });
     $(function () {
-        $(".sku_attr_value").css({"border":" solid 1px #CCCCCC"});
-        $(".sku_attr_value .checked").css({"border": "solid 1px red"});
+        // $(".sku_attr_value").parent().css({"border":" solid 1px #CCCCCC"});
+        // $(".sku_attr_value .checked").css({"border": "solid 1px red"});
+        $("a[class='sku_attr_value']").parent().css({"border": "solid 1px #CCC"});
+        $("a[class='sku_attr_value checked']").parent().css({"border": "solid 1px red"});
     })
 </script>
 
