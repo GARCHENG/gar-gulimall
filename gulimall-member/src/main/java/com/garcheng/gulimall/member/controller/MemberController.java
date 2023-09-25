@@ -4,12 +4,9 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.garcheng.gulimall.member.vo.MemberRegisterVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.garcheng.gulimall.member.entity.MemberEntity;
 import com.garcheng.gulimall.member.service.MemberService;
@@ -39,6 +36,12 @@ public class MemberController {
         PageUtils page = memberService.queryPage(params);
 
         return R.ok().put("page", page);
+    }
+
+    @PostMapping("register")
+    public R register(@RequestBody MemberRegisterVo memberRegisterVo){
+        memberService.register(memberRegisterVo);
+        return R.ok();
     }
 
 
