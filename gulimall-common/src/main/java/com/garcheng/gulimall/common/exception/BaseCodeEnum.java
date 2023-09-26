@@ -7,7 +7,11 @@ public enum BaseCodeEnum {
 
     VAILD_EXCEPTION(10001,"参数校验失败"),
 
-    PRODUCT_UP_EXCEPTION(11000,"商品上架失败");
+    PRODUCT_UP_EXCEPTION(11000,"商品上架失败"),
+
+    PHONE_EXIT_EXCEPTION(12000,"手机号已存在"),
+
+    USERNAME_EXIT_EXCEPTION(12001,"用户名已存在");
 
     private Integer code;
 

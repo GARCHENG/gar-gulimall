@@ -1,5 +1,6 @@
 package com.garcheng.gulimall.auth.controller;
 
+import com.alibaba.fastjson.TypeReference;
 import com.garcheng.gulimall.auth.constant.AuthRedisConstant;
 import com.garcheng.gulimall.auth.feign.MemberFeignService;
 import com.garcheng.gulimall.auth.service.SmsService;
@@ -61,9 +62,12 @@ public class LoginController {
                 // TODO: 2023/9/25  远程调用会员服务注册用户
                 R result = memberFeignService.register(registerVo);
                 if ("0".equals(result.getCode().toString())){
-
+                    return "redirect:http://auth.gulimall.com/login.html";
                 }else {
-
+                    Map<String,String> errorMap = new HashMap<>();
+                    errorMap.put("msg",result.getData(new TypeReference<String>(){}));
+                    attributesModelMap.addFlashAttribute("errorMap",errorMap);
+                    return "redirect:http://auth.gulimall.com/reg.html";
                 }
             }else {
                 Map<String,String> errorMap = new HashMap<>();

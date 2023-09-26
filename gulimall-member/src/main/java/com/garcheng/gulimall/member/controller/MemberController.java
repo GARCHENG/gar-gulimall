@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.garcheng.gulimall.common.exception.BaseCodeEnum;
+import com.garcheng.gulimall.member.exception.PhoneExitException;
+import com.garcheng.gulimall.member.exception.UsernameExitException;
 import com.garcheng.gulimall.member.vo.MemberRegisterVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -40,8 +43,14 @@ public class MemberController {
 
     @PostMapping("register")
     public R register(@RequestBody MemberRegisterVo memberRegisterVo){
-        memberService.register(memberRegisterVo);
-        return R.ok();
+        try {
+            memberService.register(memberRegisterVo);
+            return R.ok();
+        }catch (PhoneExitException e){
+            return R.error(BaseCodeEnum.PHONE_EXIT_EXCEPTION.getCode(),BaseCodeEnum.PHONE_EXIT_EXCEPTION.getMessage());
+        }catch (UsernameExitException e){
+            return R.error(BaseCodeEnum.USERNAME_EXIT_EXCEPTION.getCode(),BaseCodeEnum.USERNAME_EXIT_EXCEPTION.getMessage());
+        }
     }
 
 

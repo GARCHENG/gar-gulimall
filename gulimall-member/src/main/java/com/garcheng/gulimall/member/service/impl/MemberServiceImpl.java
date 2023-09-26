@@ -6,6 +6,7 @@ import com.garcheng.gulimall.member.exception.UsernameExitException;
 import com.garcheng.gulimall.member.service.MemberLevelService;
 import com.garcheng.gulimall.member.vo.MemberRegisterVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,7 +37,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
     }
 
     @Override
-    public void register(MemberRegisterVo memberRegisterVo) {
+    public void register(MemberRegisterVo memberRegisterVo) throws PhoneExitException,UsernameExitException {
         MemberEntity memberEntity = new MemberEntity();
 
         MemberLevelEntity memberLevelEntity = memberLevelService.getDefaultLevel();
@@ -48,18 +49,21 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         isExitMobile(memberRegisterVo.getPhone());
         memberEntity.setMobile(memberRegisterVo.getPhone());
 
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        memberEntity.setPassword(encoder.encode(memberRegisterVo.getPassword()));
 
+        this.save(memberEntity);
 
     }
 
-    private void isExitMobile(String phone) {
+    private void isExitMobile(String phone)  throws PhoneExitException{
         int count = count(new QueryWrapper<MemberEntity>().eq("mobile", phone));
         if (count == 0){
             throw new PhoneExitException();
         }
     }
 
-    private void isExitUsername(String username) {
+    private void isExitUsername(String username) throws UsernameExitException{
         int count = count(new QueryWrapper<MemberEntity>().eq("username", username));
         if (count == 0){
             throw new UsernameExitException();
