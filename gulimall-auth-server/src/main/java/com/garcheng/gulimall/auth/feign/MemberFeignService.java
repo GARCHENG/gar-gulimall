@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient("gulimall-member")
 public interface MemberFeignService {
 
-    @PostMapping("register")
+    @PostMapping("member/member/register")
     public R register(@RequestBody RegisterVo registerVo);
 }

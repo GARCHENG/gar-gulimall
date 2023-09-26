@@ -58,14 +58,14 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 
     private void isExitMobile(String phone)  throws PhoneExitException{
         int count = count(new QueryWrapper<MemberEntity>().eq("mobile", phone));
-        if (count == 0){
+        if (count != 0){
             throw new PhoneExitException();
         }
     }
 
     private void isExitUsername(String username) throws UsernameExitException{
         int count = count(new QueryWrapper<MemberEntity>().eq("username", username));
-        if (count == 0){
+        if (count != 0){
             throw new UsernameExitException();
         }
     }
