@@ -1,9 +1,12 @@
 package com.garcheng.gulimall.member.service.impl;
 
 import com.garcheng.gulimall.member.entity.MemberLevelEntity;
+import com.garcheng.gulimall.member.exception.AccountNotFindException;
+import com.garcheng.gulimall.member.exception.PasswordWrongException;
 import com.garcheng.gulimall.member.exception.PhoneExitException;
 import com.garcheng.gulimall.member.exception.UsernameExitException;
 import com.garcheng.gulimall.member.service.MemberLevelService;
+import com.garcheng.gulimall.member.vo.MemberLoginVo;
 import com.garcheng.gulimall.member.vo.MemberRegisterVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -53,6 +56,25 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         memberEntity.setPassword(encoder.encode(memberRegisterVo.getPassword()));
 
         this.save(memberEntity);
+
+    }
+
+    @Override
+    public MemberEntity login(MemberLoginVo memberLoginVo) throws PasswordWrongException,AccountNotFindException{
+        QueryWrapper<MemberEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username",memberLoginVo.getLoginAccount()).or().eq("mobile",memberLoginVo.getLoginAccount());
+        MemberEntity memberEntity = getOne(queryWrapper);
+        if (memberEntity != null){
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+            boolean matches = encoder.matches(memberLoginVo.getPassword(), memberEntity.getPassword());
+            if (matches){
+                return memberEntity;
+            }else {
+                throw new PasswordWrongException();
+            }
+        }else {
+            throw new AccountNotFindException();
+        }
 
     }
 

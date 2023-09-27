@@ -11,7 +11,11 @@ public enum BaseCodeEnum {
 
     PHONE_EXIT_EXCEPTION(12000,"手机号已存在"),
 
-    USERNAME_EXIT_EXCEPTION(12001,"用户名已存在");
+    USERNAME_EXIT_EXCEPTION(12001,"用户名已存在"),
+
+    PASSWORD_WRONG_EXCEPTION(12002,"密码错误"),
+
+    ACCOUNT_NOT_FIND_EXCEPTION(12003,"没有找到该用户");
 
     private Integer code;
 

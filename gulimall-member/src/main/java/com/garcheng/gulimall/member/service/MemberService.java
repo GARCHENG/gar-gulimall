@@ -3,8 +3,11 @@ package com.garcheng.gulimall.member.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.garcheng.gulimall.common.utils.PageUtils;
 import com.garcheng.gulimall.member.entity.MemberEntity;
+import com.garcheng.gulimall.member.exception.AccountNotFindException;
+import com.garcheng.gulimall.member.exception.PasswordWrongException;
 import com.garcheng.gulimall.member.exception.PhoneExitException;
 import com.garcheng.gulimall.member.exception.UsernameExitException;
+import com.garcheng.gulimall.member.vo.MemberLoginVo;
 import com.garcheng.gulimall.member.vo.MemberRegisterVo;
 
 import java.util.Map;
@@ -21,5 +24,7 @@ public interface MemberService extends IService<MemberEntity> {
     PageUtils queryPage(Map<String, Object> params);
 
     void register(MemberRegisterVo memberRegisterVo) throws PhoneExitException, UsernameExitException;
+
+    MemberEntity login(MemberLoginVo memberLoginVo) throws PasswordWrongException, AccountNotFindException;
 }
 

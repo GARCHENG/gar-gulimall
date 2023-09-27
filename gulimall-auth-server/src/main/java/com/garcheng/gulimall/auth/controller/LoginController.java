@@ -4,17 +4,16 @@ import com.alibaba.fastjson.TypeReference;
 import com.garcheng.gulimall.auth.constant.AuthRedisConstant;
 import com.garcheng.gulimall.auth.feign.MemberFeignService;
 import com.garcheng.gulimall.auth.service.SmsService;
+import com.garcheng.gulimall.auth.vo.LoginVo;
 import com.garcheng.gulimall.auth.vo.RegisterVo;
 import com.garcheng.gulimall.common.utils.R;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import javax.validation.Valid;
@@ -68,8 +67,7 @@ public class LoginController {
                     return "redirect:http://auth.gulimall.com/login.html";
                 } else {
                     Map<String, String> errorMap = new HashMap<>();
-                    errorMap.put("msg", result.getData(new TypeReference<String>() {
-                    }));
+                    errorMap.put("code", result.get("msg").toString());
                     attributesModelMap.addFlashAttribute("errors", errorMap);
                     return "redirect:http://auth.gulimall.com/reg.html";
                 }
@@ -86,6 +84,25 @@ public class LoginController {
             return "redirect:http://auth.gulimall.com/reg.html";
         }
 
+    }
+
+    @PostMapping("/login")
+    public String login(LoginVo loginVo,BindingResult bindingResult,RedirectAttributesModelMap attributesModelMap){
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errorMap = bindingResult.getFieldErrors().stream().collect(Collectors.toMap(FieldError::getField,
+                    (obj) -> obj.getDefaultMessage()));
+            attributesModelMap.addFlashAttribute("errors", errorMap);
+            return "redirect:http://auth.gulimall.com/reg.html";
+        }
+        R loginResult = memberFeignService.login(loginVo);
+        if (loginResult.getCode() == 0){
+            return "redirect:http://gulimall.com";
+        }else {
+            Map<Object, String> errorMap = new HashMap<>();
+            errorMap.put("code",loginResult.get("msg").toString());
+            attributesModelMap.addFlashAttribute("errors",errorMap);
+            return "redirect:http://auth.gulimall.com/login.html";
+        }
 
     }
 }

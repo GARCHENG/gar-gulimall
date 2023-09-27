@@ -4,9 +4,14 @@ import java.util.Arrays;
 import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.garcheng.gulimall.common.exception.BaseCodeEnum;
+import com.garcheng.gulimall.member.exception.AccountNotFindException;
+import com.garcheng.gulimall.member.exception.PasswordWrongException;
 import com.garcheng.gulimall.member.exception.PhoneExitException;
 import com.garcheng.gulimall.member.exception.UsernameExitException;
+import com.garcheng.gulimall.member.vo.MemberLoginVo;
 import com.garcheng.gulimall.member.vo.MemberRegisterVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -50,6 +55,18 @@ public class MemberController {
             return R.error(BaseCodeEnum.PHONE_EXIT_EXCEPTION.getCode(),BaseCodeEnum.PHONE_EXIT_EXCEPTION.getMessage());
         }catch (UsernameExitException e){
             return R.error(BaseCodeEnum.USERNAME_EXIT_EXCEPTION.getCode(),BaseCodeEnum.USERNAME_EXIT_EXCEPTION.getMessage());
+        }
+    }
+
+    @RequestMapping("login")
+    public R login(@RequestBody MemberLoginVo memberLoginVo){
+        try {
+            MemberEntity memberEntity = memberService.login(memberLoginVo);
+            return R.ok().put("msg",memberEntity);
+        }catch (PasswordWrongException e){
+            return R.error(BaseCodeEnum.PASSWORD_WRONG_EXCEPTION.getCode(),BaseCodeEnum.PASSWORD_WRONG_EXCEPTION.getMessage());
+        }catch (AccountNotFindException e){
+            return R.error(BaseCodeEnum.ACCOUNT_NOT_FIND_EXCEPTION.getCode(),BaseCodeEnum.ACCOUNT_NOT_FIND_EXCEPTION.getMessage());
         }
     }
 
