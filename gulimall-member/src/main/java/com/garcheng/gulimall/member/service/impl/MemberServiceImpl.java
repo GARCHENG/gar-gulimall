@@ -107,7 +107,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
                 JSONObject jsonObject = JSON.parseObject(json);
                 String gender = (String) jsonObject.get("gender");
 
-                create.setUsername((String) jsonObject.get("name"));
+                create.setNickname((String) jsonObject.get("name"));
                 create.setGender("m".equals(gender) ? 1 : 0);
                 create.setHeader((String) jsonObject.get("profile_image_url"));
 
