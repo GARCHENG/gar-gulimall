@@ -15,7 +15,9 @@ public enum BaseCodeEnum {
 
     PASSWORD_WRONG_EXCEPTION(12002,"密码错误"),
 
-    ACCOUNT_NOT_FIND_EXCEPTION(12003,"没有找到该用户");
+    ACCOUNT_NOT_FIND_EXCEPTION(12003,"没有找到该用户"),
+
+    OAUTH_LOGIN_EXCEPTION(12004,"第三方登录出现异常");
 
     private Integer code;
 

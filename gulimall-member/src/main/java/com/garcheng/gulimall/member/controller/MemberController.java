@@ -13,6 +13,7 @@ import com.garcheng.gulimall.member.exception.PhoneExitException;
 import com.garcheng.gulimall.member.exception.UsernameExitException;
 import com.garcheng.gulimall.member.vo.MemberLoginVo;
 import com.garcheng.gulimall.member.vo.MemberRegisterVo;
+import com.garcheng.gulimall.member.vo.SocialUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,6 +70,19 @@ public class MemberController {
             return R.error(BaseCodeEnum.ACCOUNT_NOT_FIND_EXCEPTION.getCode(),BaseCodeEnum.ACCOUNT_NOT_FIND_EXCEPTION.getMessage());
         }
     }
+
+    @RequestMapping("/oauth/login")
+    public R oauthLogin(@RequestBody SocialUser socialUser){
+        MemberEntity memberEntity = null;
+        try {
+            memberEntity = memberService.oauthLoginOrRegister(socialUser);
+            return R.ok().put("data",memberEntity);
+        } catch (Exception e) {
+            return R.error(BaseCodeEnum.OAUTH_LOGIN_EXCEPTION.getCode(),BaseCodeEnum.OAUTH_LOGIN_EXCEPTION.getMessage());
+        }
+
+    }
+
 
 
     /**

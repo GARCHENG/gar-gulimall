@@ -9,6 +9,7 @@ import com.garcheng.gulimall.member.exception.PhoneExitException;
 import com.garcheng.gulimall.member.exception.UsernameExitException;
 import com.garcheng.gulimall.member.vo.MemberLoginVo;
 import com.garcheng.gulimall.member.vo.MemberRegisterVo;
+import com.garcheng.gulimall.member.vo.SocialUser;
 
 import java.util.Map;
 
@@ -26,5 +27,7 @@ public interface MemberService extends IService<MemberEntity> {
     void register(MemberRegisterVo memberRegisterVo) throws PhoneExitException, UsernameExitException;
 
     MemberEntity login(MemberLoginVo memberLoginVo) throws PasswordWrongException, AccountNotFindException;
+
+    MemberEntity oauthLoginOrRegister(SocialUser socialUser) throws Exception;
 }
 
