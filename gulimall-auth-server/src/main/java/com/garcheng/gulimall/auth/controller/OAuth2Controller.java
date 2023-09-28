@@ -3,7 +3,7 @@ package com.garcheng.gulimall.auth.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.garcheng.gulimall.auth.feign.MemberFeignService;
-import com.garcheng.gulimall.auth.vo.MemberResponseVo;
+import com.garcheng.gulimall.common.vo.MemberInfo;
 import com.garcheng.gulimall.auth.vo.SocialUser;
 import com.garcheng.gulimall.common.utils.HttpUtils;
 import com.garcheng.gulimall.common.utils.R;
@@ -13,11 +13,9 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpSession;
-import javax.websocket.Session;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +45,7 @@ public class OAuth2Controller {
             SocialUser socialUser = JSON.parseObject(json, SocialUser.class);
             R result = memberFeignService.oauthLogin(socialUser);
             if (result.getCode() == 0){
-                MemberResponseVo memberResponseVo = result.getData(new TypeReference<MemberResponseVo>() {});
+                MemberInfo memberResponseVo = result.getData(new TypeReference<MemberInfo>() {});
                 log.info("用户：{} 登录成功",memberResponseVo.getUsername());
                 session.setAttribute("loginUser",memberResponseVo);
                 return "redirect:http://gulimall.com";

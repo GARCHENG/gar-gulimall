@@ -1,4 +1,4 @@
-package com.garcheng.gulimall.auth.vo;
+package com.garcheng.gulimall.common.vo;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class MemberResponseVo implements Serializable {
+public class MemberInfo implements Serializable {
     private Long id;
     /**
      * 会员等级id
