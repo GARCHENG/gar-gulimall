@@ -3,6 +3,7 @@ package com.garcheng.gulimall.auth.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.garcheng.gulimall.auth.feign.MemberFeignService;
+import com.garcheng.gulimall.common.constant.AuthRedisConstant;
 import com.garcheng.gulimall.common.vo.MemberInfo;
 import com.garcheng.gulimall.auth.vo.SocialUser;
 import com.garcheng.gulimall.common.utils.HttpUtils;
@@ -47,7 +48,7 @@ public class OAuth2Controller {
             if (result.getCode() == 0){
                 MemberInfo memberResponseVo = result.getData(new TypeReference<MemberInfo>() {});
                 log.info("用户：{} 登录成功",memberResponseVo.getUsername());
-                session.setAttribute("loginUser",memberResponseVo);
+                session.setAttribute(AuthRedisConstant.LOGIN_USER,memberResponseVo);
                 return "redirect:http://gulimall.com";
             }else {
                 return "redirect:http://auth.gulimall.com/login.html";

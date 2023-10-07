@@ -1,4 +1,4 @@
-package com.garcheng.gulimall.auth.config;
+package com.garcheng.gulimall.search.config;
 
 import com.alibaba.fastjson.support.spring.GenericFastJsonRedisSerializer;
 import org.springframework.context.annotation.Bean;

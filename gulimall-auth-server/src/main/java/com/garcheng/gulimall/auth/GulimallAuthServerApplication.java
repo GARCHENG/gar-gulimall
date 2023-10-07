@@ -9,7 +9,6 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
-@EnableRedisHttpSession
 public class GulimallAuthServerApplication {
 
     public static void main(String[] args) {

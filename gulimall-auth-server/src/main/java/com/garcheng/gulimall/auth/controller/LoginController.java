@@ -1,12 +1,13 @@
 package com.garcheng.gulimall.auth.controller;
 
 import com.alibaba.fastjson.TypeReference;
-import com.garcheng.gulimall.auth.constant.AuthRedisConstant;
+import com.garcheng.gulimall.common.constant.AuthRedisConstant;
 import com.garcheng.gulimall.auth.feign.MemberFeignService;
 import com.garcheng.gulimall.auth.service.SmsService;
 import com.garcheng.gulimall.auth.vo.LoginVo;
 import com.garcheng.gulimall.auth.vo.RegisterVo;
 import com.garcheng.gulimall.common.utils.R;
+import com.garcheng.gulimall.common.vo.MemberInfo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -16,6 +17,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +48,15 @@ public class LoginController {
             return R.error("验证码已发，请稍后再试");
         }
 
+    }
+
+    @GetMapping("/login.html")
+    public String loginPage(HttpSession session){
+        Object loginUser = session.getAttribute(AuthRedisConstant.LOGIN_USER);
+        if (loginUser != null){
+            return "redirect:http://gulimall.com";
+        }
+        return "login";
     }
 
     @PostMapping("/register")
@@ -87,7 +98,9 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String login(LoginVo loginVo,BindingResult bindingResult,RedirectAttributesModelMap attributesModelMap){
+    public String login(LoginVo loginVo, BindingResult bindingResult,
+                        RedirectAttributesModelMap attributesModelMap,
+                        HttpSession session){
         if (bindingResult.hasErrors()) {
             Map<String, String> errorMap = bindingResult.getFieldErrors().stream().collect(Collectors.toMap(FieldError::getField,
                     (obj) -> obj.getDefaultMessage()));
@@ -96,6 +109,8 @@ public class LoginController {
         }
         R loginResult = memberFeignService.login(loginVo);
         if (loginResult.getCode() == 0){
+            MemberInfo memberResponseVo = loginResult.getData(new TypeReference<MemberInfo>() {});
+            session.setAttribute(AuthRedisConstant.LOGIN_USER,memberResponseVo);
             return "redirect:http://gulimall.com";
         }else {
             Map<Object, String> errorMap = new HashMap<>();

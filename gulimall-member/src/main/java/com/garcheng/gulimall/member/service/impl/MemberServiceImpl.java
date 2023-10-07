@@ -61,6 +61,8 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         isExitMobile(memberRegisterVo.getPhone());
         memberEntity.setMobile(memberRegisterVo.getPhone());
 
+        memberEntity.setNickname(memberRegisterVo.getUsername());
+
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         memberEntity.setPassword(encoder.encode(memberRegisterVo.getPassword()));
 
