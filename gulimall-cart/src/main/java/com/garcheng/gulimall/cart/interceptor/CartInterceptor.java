@@ -16,7 +16,6 @@ import java.util.UUID;
 
 public class CartInterceptor implements HandlerInterceptor {
 
-
     public static ThreadLocal<UserInfoTo> threadLocal = new ThreadLocal<>();
 
     @Override
