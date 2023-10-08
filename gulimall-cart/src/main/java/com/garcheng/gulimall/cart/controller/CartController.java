@@ -11,6 +11,7 @@ public class CartController {
     @GetMapping("/cart.html")
     public String cartPage(){
         UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
+        System.out.println(userInfoTo);
         return "cartList";
     }
 }

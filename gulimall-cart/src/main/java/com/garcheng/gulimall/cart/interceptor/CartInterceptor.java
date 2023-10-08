@@ -1,6 +1,7 @@
 package com.garcheng.gulimall.cart.interceptor;
 
 import com.garcheng.gulimall.cart.vo.UserInfoTo;
+import com.garcheng.gulimall.common.constant.AuthRedisConstant;
 import com.garcheng.gulimall.common.constant.CartConstant;
 import com.garcheng.gulimall.common.vo.MemberInfo;
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +23,7 @@ public class CartInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession();
         UserInfoTo userInfoTo = new UserInfoTo();
-        MemberInfo loginUser = (MemberInfo) session.getAttribute(CartConstant.TEMP_USER_COOKIES_NAME);
+        MemberInfo loginUser = (MemberInfo) session.getAttribute(AuthRedisConstant.LOGIN_USER);
         if (loginUser != null) {
             userInfoTo.setUserId(loginUser.getId());
         }
