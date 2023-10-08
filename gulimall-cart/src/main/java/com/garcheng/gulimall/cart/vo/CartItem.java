@@ -78,7 +78,7 @@ public class CartItem {
     }
 
     public BigDecimal getTotalPrice() {
-        return getPrice().multiply(new BigDecimal(getCount()+""));
+        return this.price.multiply(new BigDecimal(getCount()+""));
     }
 
     public void setTotalPrice(BigDecimal totalPrice) {
