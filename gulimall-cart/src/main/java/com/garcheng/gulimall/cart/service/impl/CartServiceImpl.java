@@ -133,6 +133,12 @@ public class CartServiceImpl implements CartService {
         cartOps.put(skuId+"",json);
     }
 
+    @Override
+    public void deleteItem(Long skuId) {
+        BoundHashOperations<String, Object, Object> cartOps = getCartOps();
+        cartOps.delete(skuId+"");
+    }
+
     private void clearCartByCartKey(String key) {
         stringRedisTemplate.delete(key);
     }
