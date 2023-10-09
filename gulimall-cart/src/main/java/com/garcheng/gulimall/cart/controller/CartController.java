@@ -2,6 +2,7 @@ package com.garcheng.gulimall.cart.controller;
 
 import com.garcheng.gulimall.cart.interceptor.CartInterceptor;
 import com.garcheng.gulimall.cart.service.CartService;
+import com.garcheng.gulimall.cart.vo.Cart;
 import com.garcheng.gulimall.cart.vo.CartItem;
 import com.garcheng.gulimall.cart.vo.UserInfoTo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,9 @@ public class CartController {
     CartService cartService;
 
     @GetMapping("/cart.html")
-    public String cartPage(){
-        UserInfoTo userInfoTo = CartInterceptor.threadLocal.get();
-        System.out.println(userInfoTo);
+    public String cartPage(Model model) throws ExecutionException, InterruptedException {
+        Cart cart = cartService.getCart();
+        model.addAttribute("cartList",cart);
         return "cartList";
     }
 

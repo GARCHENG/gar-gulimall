@@ -56,7 +56,7 @@
 						<input type="button" value="搜索" class="one_right_btn">
 					</div>
 				</div>
-				<div class="one_search_load" th:if="${userId}==null">
+				<div class="one_search_load" th:if="${session.loginUser}==null">
 					<img src="/static/cart/img/shop_07.jpg" class="one_load_wraing">
 					<span>您还没有登录！登录后购物车的商品将保存到您账号中</span>
 					<a href="#"><input type="button" onclick="login()" value="立即登录" class="one_load_btn"></a>
@@ -85,27 +85,29 @@
 
 				<div class="One_ShopCon">
 					<ul>
-						<li th:each="cartInfo:${cartList}">
+						<li th:each="cartInfo:${cartList.items}">
 							<div> </div>
 
 							<div>
 								<ol>
-									<li><input type="checkbox" class="check" th:value="${cartInfo.skuId}" onchange="checkSku(this)" th:checked="(${cartInfo.isChecked}==1)?'true':'false'" /></li>
+									<li><input type="checkbox" class="check" th:value="${cartInfo.check}" onchange="checkSku(this)" th:checked="${cartInfo.check}" /></li>
 									<li>
-										<dt><img th:src="${cartInfo.imgUrl}" src="img\shop1.jpg" alt=""></dt>
+										<dt><img th:src="${cartInfo.image}" src="img\shop1.jpg" alt=""></dt>
 										<dd th:onclick="'toItem('+${cartInfo.skuId}+')'">
 											<p>
-												<span th:text="${cartInfo.skuName}">TCL 55A950C 55英寸32核</span>
+												<span th:text="${cartInfo.title}">TCL 55A950C 55英寸32核</span>
 											</p>
+											<br>
+											<span th:text="${cartInfo.skuAttr}">TCL 55A950C 55英寸32核</span>
 										</dd>
 									</li>
 									<li>
-										<p class="dj" th:text="'￥'+${cartInfo.skuPrice}">4599.00</p>
+										<p class="dj" th:text="'￥'+${#numbers.formatDecimal(cartInfo.price,3,2)}">4599.00</p>
 									</li>
 									<li>
 										<p>
 											<span>-</span>
-											<span th:text="${cartInfo.skuNum}">5</span>
+											<span th:text="${cartInfo.count}">5</span>
 											<span>+</span>
 										</p>
 									</li>
@@ -178,8 +180,8 @@
 					</div>
 					<div>
 						<ol>
-							<li>总价:<span style="color:#e64346;font-weight:bold;font-size:16px;" class="fnt">￥0.00</span> </li>
-
+							<li>总价:<span th:text="${#numbers.formatDecimal(cartList.totalAccount,3,2)}" style="color:#e64346;font-weight:bold;font-size:16px;" class="fnt"></span> </li>
+							<li>总计优惠：<span th:text="${#numbers.formatDecimal(cartList.reduce,3,2)}"></span></li>
 						</ol>
 					</div>
 					<div><button onclick="toTrade()" type="button">去结算</button></div>
@@ -254,12 +256,13 @@
 		}
 
 		function toItem(skuId) {
-			window.location.href = "http://item.gmall.com:8084/" + skuId + ".html";
+			window.location.href = "http://item.gulimall.com/" + skuId + ".html";
 		}
 
 		function login() {
 			var s = encodeURIComponent("http://cart.gmall.com:8087/cartList");
-			window.location.href = "http://passport.atguigu.com/index?originUrl=" + s;
+			// window.location.href = "http://passport.atguigu.com/index?originUrl=" + s;
+			window.location.href = "http://auth.gulimall.com/login.html";
 		}
 
 		function checkSku(chkbox) {
