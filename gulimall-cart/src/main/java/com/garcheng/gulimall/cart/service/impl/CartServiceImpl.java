@@ -124,6 +124,15 @@ public class CartServiceImpl implements CartService {
         cartOps.put(skuId+"",json);
     }
 
+    @Override
+    public void countItem(Long skuId, Integer num) {
+        BoundHashOperations<String, Object, Object> cartOps = getCartOps();
+        CartItem cartItem = getCartItemBySkuId(skuId);
+        cartItem.setCount(num);
+        String json = JSON.toJSONString(cartItem);
+        cartOps.put(skuId+"",json);
+    }
+
     private void clearCartByCartKey(String key) {
         stringRedisTemplate.delete(key);
     }

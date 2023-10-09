@@ -53,4 +53,11 @@ public class CartController {
         return "success";
 
     }
+
+    @GetMapping("/countItem")
+    public String countItem(@RequestParam("skuId") Long skuId,
+                            @RequestParam("num") Integer num){
+        cartService.countItem(skuId,num);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
 }
