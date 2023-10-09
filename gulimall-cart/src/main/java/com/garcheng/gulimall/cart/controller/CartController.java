@@ -28,6 +28,13 @@ public class CartController {
         return "cartList";
     }
 
+    @GetMapping("/checkItem")
+    public String checkItem(@RequestParam("skuId") Long skuId,
+                            @RequestParam("check") Integer check){
+        cartService.checkItem(skuId,check);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
+
     @RequestMapping("/addToCart")
     public String addToCart(@RequestParam("skuId") Long skuId,
                             @RequestParam("num") Integer num,

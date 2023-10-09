@@ -11,4 +11,6 @@ public interface CartService {
     CartItem getCartItemBySkuId(Long skuId);
 
     Cart getCart() throws ExecutionException, InterruptedException;
+
+    void checkItem(Long skuId, Integer check);
 }
