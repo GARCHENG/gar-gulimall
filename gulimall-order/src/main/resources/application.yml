@@ -12,6 +12,9 @@
 #        server-addr: 127.0.0.1:8848
 #  application:
 #    name: gulimall-order
+#  rabbitmq:
+#    host: gulimall.com
+#    virtual-host: /
 #
 #mybatis-plus:
 #  mapper-locations: classpath:/mapper/**/*.xml
