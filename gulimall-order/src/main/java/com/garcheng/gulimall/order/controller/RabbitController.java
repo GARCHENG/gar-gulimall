@@ -4,10 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.garcheng.gulimall.order.entity.OrderEntity;
 import com.garcheng.gulimall.order.entity.OrderSettingEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -22,12 +25,12 @@ public class RabbitController {
             if (i%2==0){
                 OrderEntity orderEntity = new OrderEntity();
                 orderEntity.setBillContent("hello");
-                rabbitTemplate.convertAndSend("hello-java-exchange","hello.java",orderEntity);
+                rabbitTemplate.convertAndSend("hello-java-exchange","hello.java",orderEntity,new CorrelationData(UUID.randomUUID().toString()));
                 log.info("消息发送完成：{}", JSON.toJSONString(orderEntity));
             }else {
                 OrderSettingEntity orderSettingEntity = new OrderSettingEntity();
                 orderSettingEntity.setMemberLevel(1);
-                rabbitTemplate.convertAndSend("hello-java-exchange","hello.java",orderSettingEntity);
+                rabbitTemplate.convertAndSend("hello-java-exchange","hello.java",orderSettingEntity,new CorrelationData(UUID.randomUUID().toString()));
                 log.info("消息发送完成：{}", JSON.toJSONString(orderSettingEntity));
             }
         }

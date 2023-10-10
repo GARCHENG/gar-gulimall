@@ -10,15 +10,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@RabbitListener(queues = {"hello-java-queue"})
+//@RabbitListener(queues = {"hello-java-queue"})
 public class RabbitService {
 
-    @RabbitHandler
+//    @RabbitHandler
     public void getRabbitMsg1(Message message, OrderEntity content) {
         log.info("接受到了消息【{}】,内容为【{}】", message, content);
     }
 
-    @RabbitHandler
+//    @RabbitHandler
     public void getRabbitMsg2(Message message, OrderSettingEntity content) {
         log.info("接受到了消息【{}】,内容为【{}】", message, content);
     }
