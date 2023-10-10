@@ -30,7 +30,7 @@ public class MyRabbitMqConfig {
         rabbitTemplate.setConfirmCallback(new RabbitTemplate.ConfirmCallback() {
             @Override
             public void confirm(CorrelationData correlationData, boolean ack, String cause) {
-                log.info("确认到达mq服务器：CorrelationData【{}】,Ack【{}】,Cause【{}】", correlationData, ack, cause);
+                log.info("arrived mq server：CorrelationData【{}】,Ack【{}】,Cause【{}】", correlationData, ack, cause);
             }
         });
 
