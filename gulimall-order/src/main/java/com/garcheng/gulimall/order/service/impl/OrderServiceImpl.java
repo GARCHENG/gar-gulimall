@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -24,6 +25,8 @@ import com.garcheng.gulimall.common.utils.Query;
 import com.garcheng.gulimall.order.dao.OrderDao;
 import com.garcheng.gulimall.order.entity.OrderEntity;
 import com.garcheng.gulimall.order.service.OrderService;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 
 @Service("orderService")
@@ -33,6 +36,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     MemberFeignService memberFeignService;
     @Autowired
     CartFeignService cartFeignService;
+
+    @Autowired
+    ThreadPoolExecutor executor;
 
 
     @Override
@@ -51,12 +57,31 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         ConfirmOrderVo confirmOrderVo = new ConfirmOrderVo();
         //设置积分信息
         confirmOrderVo.setIntegration(memberInfo.getIntegration());
+        //获取当前主线程的request信息
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         //设置地址信息
-        List<MemberAddressVo> addressList = memberFeignService.getAddress(memberInfo.getId());
-        confirmOrderVo.setAddressVoList(addressList);
+        CompletableFuture<Void> getAddressTask = CompletableFuture.runAsync(() -> {
+            //解决异步feign远程调用request丢失
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            List<MemberAddressVo> addressList = memberFeignService.getAddress(memberInfo.getId());
+            confirmOrderVo.setAddressVoList(addressList);
+        }, executor);
         //设置订单商品信息
-        List<OrderItemVo> currentCartItems = cartFeignService.getCurrentCartItems();
-        confirmOrderVo.setOrderItemVos(currentCartItems);
+        CompletableFuture<Void> getCurrentCartItemsTask = CompletableFuture.runAsync(() -> {
+            //解决异步feign远程调用request丢失
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            List<OrderItemVo> currentCartItems = null;
+            try {
+                currentCartItems = cartFeignService.getCurrentCartItems();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            confirmOrderVo.setOrderItemVos(currentCartItems);
+        }, executor);
+
+        CompletableFuture.allOf(getAddressTask,getCurrentCartItemsTask).get();
 
         // TODO: 2023/10/11 防止重复提交
 
