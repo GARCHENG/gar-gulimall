@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.garcheng.gulimall.common.to.SkuStockTo;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.common.vo.MemberInfo;
+import com.garcheng.gulimall.order.constant.OrderContant;
 import com.garcheng.gulimall.order.feign.CartFeignService;
 import com.garcheng.gulimall.order.feign.MemberFeignService;
 import com.garcheng.gulimall.order.feign.WareFeignService;
@@ -13,10 +14,12 @@ import com.garcheng.gulimall.order.vo.MemberAddressVo;
 import com.garcheng.gulimall.order.vo.OrderItemVo;
 import com.garcheng.gulimall.order.vo.SkuStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -44,6 +47,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     CartFeignService cartFeignService;
     @Autowired
     WareFeignService wareFeignService;
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     ThreadPoolExecutor executor;
@@ -101,6 +107,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         CompletableFuture.allOf(getAddressTask,getCurrentCartItemsTask).get();
 
         // TODO: 2023/10/11 防止重复提交
+        String orderToken = UUID.randomUUID().toString().replace("-","");
+        confirmOrderVo.setOrderToken(orderToken);
+        stringRedisTemplate.opsForValue().set(OrderContant.USER_ORDER_REDIS_TOKEN_PREFIX+memberInfo.getId(),orderToken);
 
         return confirmOrderVo;
     }
