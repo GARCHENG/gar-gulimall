@@ -17,6 +17,8 @@ public class ConfirmOrderVo {
     @Getter @Setter
     private List<OrderItemVo> orderItemVos;
 
+
+
     //发票
 
     //积分
@@ -44,6 +46,16 @@ public class ConfirmOrderVo {
 
     //应付价格
     private BigDecimal payPrice;
+
+    public Integer getCount(){
+        int count = 0;
+        if (orderItemVos != null && orderItemVos.size() > 0){
+            for (OrderItemVo orderItemVo : orderItemVos) {
+                count = count + orderItemVo.getCount();
+            }
+        }
+        return count;
+    }
 
     //防重复提交
     @Getter @Setter
