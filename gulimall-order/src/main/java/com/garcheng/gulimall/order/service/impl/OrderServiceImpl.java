@@ -1,12 +1,17 @@
 package com.garcheng.gulimall.order.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
+import com.garcheng.gulimall.common.to.SkuStockTo;
+import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.common.vo.MemberInfo;
 import com.garcheng.gulimall.order.feign.CartFeignService;
 import com.garcheng.gulimall.order.feign.MemberFeignService;
+import com.garcheng.gulimall.order.feign.WareFeignService;
 import com.garcheng.gulimall.order.interceptor.LoginInterceptor;
 import com.garcheng.gulimall.order.vo.ConfirmOrderVo;
 import com.garcheng.gulimall.order.vo.MemberAddressVo;
 import com.garcheng.gulimall.order.vo.OrderItemVo;
+import com.garcheng.gulimall.order.vo.SkuStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -36,6 +42,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     MemberFeignService memberFeignService;
     @Autowired
     CartFeignService cartFeignService;
+    @Autowired
+    WareFeignService wareFeignService;
 
     @Autowired
     ThreadPoolExecutor executor;
@@ -79,7 +87,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 e.printStackTrace();
             }
             confirmOrderVo.setOrderItemVos(currentCartItems);
-        }, executor);
+        }, executor).thenRunAsync(() ->{
+            List<OrderItemVo> orderItemVos = confirmOrderVo.getOrderItemVos();
+            List<Long> skuIdS = orderItemVos.stream().map(item -> item.getSkuId()).collect(Collectors.toList());
+            R skusStock = wareFeignService.getSkusStock(skuIdS);
+                List<SkuStockVo> data = skusStock.getData(new TypeReference<List<SkuStockVo>>() {});
+                if (data != null && data.size() > 0) {
+                    Map<Long, Boolean> stockMap = data.stream().collect(Collectors.toMap(SkuStockVo::getSkuId, SkuStockVo::getHasStock));
+                    confirmOrderVo.setHasStockMap(stockMap);
+                }
+        },executor);
 
         CompletableFuture.allOf(getAddressTask,getCurrentCartItemsTask).get();
 

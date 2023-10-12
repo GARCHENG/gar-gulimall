@@ -24,7 +24,6 @@ public class OrderItemVo {
 
     private BigDecimal totalPrice;
 
-    //是否有货
-    private boolean hasStock;
+
 
 }

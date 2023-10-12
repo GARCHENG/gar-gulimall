@@ -1,11 +1,11 @@
 package com.garcheng.gulimall.order.vo;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public class ConfirmOrderVo {
 
@@ -27,6 +27,10 @@ public class ConfirmOrderVo {
 
     //总价
     private BigDecimal totalPrice;
+
+    //是否有货
+    @Getter @Setter
+    private Map<Long,Boolean> hasStockMap;
 
     public BigDecimal getTotalPrice() {
         BigDecimal price = new BigDecimal("0");
