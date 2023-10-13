@@ -1,6 +1,8 @@
 package com.garcheng.gulimall.ware.service.impl;
 
 import com.garcheng.gulimall.common.to.SkuStockTo;
+import com.garcheng.gulimall.ware.vo.LockStockResult;
+import com.garcheng.gulimall.ware.vo.WareLockVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +54,11 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             return skuStockTo;
         }).collect(Collectors.toList());
         return stockToList;
+    }
+
+    @Override
+    public List<LockStockResult> orderLockStock(WareLockVo wareLockVo) {
+        return null;
     }
 
 }

@@ -12,6 +12,7 @@ import com.garcheng.gulimall.order.feign.MemberFeignService;
 import com.garcheng.gulimall.order.feign.ProductFeignService;
 import com.garcheng.gulimall.order.feign.WareFeignService;
 import com.garcheng.gulimall.order.interceptor.LoginInterceptor;
+import com.garcheng.gulimall.order.service.OrderItemService;
 import com.garcheng.gulimall.order.to.orderCreateTo;
 import com.garcheng.gulimall.order.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -38,6 +36,7 @@ import com.garcheng.gulimall.common.utils.Query;
 import com.garcheng.gulimall.order.dao.OrderDao;
 import com.garcheng.gulimall.order.entity.OrderEntity;
 import com.garcheng.gulimall.order.service.OrderService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -59,6 +58,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    OrderItemService orderItemService;
 
     @Autowired
     ThreadPoolExecutor executor;
@@ -124,6 +126,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return confirmOrderVo;
     }
 
+    @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo) throws ExecutionException, InterruptedException {
         SubmitOrderResponseVo response = new SubmitOrderResponseVo();
@@ -143,7 +146,24 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             orderCreateTo orderCreateTo = createOrder();
             //验价
             if (Math.abs(orderCreateTo.getPayPrice().subtract(submitOrderVo.getPayPrice()).doubleValue()) < 0.01){
+                //保存订单
+                saveOrder(orderCreateTo);
                 //锁库存
+                WareLockVo wareLockVo = new WareLockVo();
+                wareLockVo.setOrderSn(orderCreateTo.getOrderEntity().getOrderSn());
+                List<OrderItemLockVo> lockVoList = orderCreateTo.getOrderItems().stream().map(orderItem -> {
+                    OrderItemLockVo orderItemLockVo = new OrderItemLockVo();
+                    orderItemLockVo.setSkuId(orderItem.getSkuId());
+                    orderItemLockVo.setCount(orderItem.getSkuQuantity());
+                    return orderItemLockVo;
+                }).collect(Collectors.toList());
+                wareLockVo.setLocks(lockVoList);
+                R r = wareFeignService.lockStock(wareLockVo);
+                if (r.getCode() == 0){
+                    //锁成功了
+                }else {
+
+                }
             }else{
                 response.setCode(2);
                 return response;
@@ -151,6 +171,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
             return response;
         }
+
+    }
+
+    private void saveOrder(orderCreateTo orderCreateTo) {
+        OrderEntity orderEntity = orderCreateTo.getOrderEntity();
+        orderEntity.setModifyTime(new Date());
+        save(orderEntity);
+
+        List<OrderItemEntity> orderItems = orderCreateTo.getOrderItems();
+        orderItemService.saveBatch(orderItems);
 
     }
 
@@ -276,6 +306,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     }
 
     private OrderEntity buildOrder(String orderSn) {
+        MemberInfo memberInfo = LoginInterceptor.threadLocal.get();
         SubmitOrderVo submitOrderVo = submitOrderVoThreadLocal.get();
         R result = wareFeignService.getFare(submitOrderVo.getAddrId());
         OrderEntity orderEntity = new OrderEntity();
@@ -293,6 +324,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             orderEntity.setReceiverRegion(fareVoResp.getAddressVo().getRegion());
         }
 
+        orderEntity.setMemberId(memberInfo.getId());
         orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
         orderEntity.setAutoConfirmDay(7);
 

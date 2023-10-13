@@ -6,12 +6,10 @@ import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 import com.garcheng.gulimall.common.to.SkuStockTo;
+import com.garcheng.gulimall.ware.vo.LockStockResult;
+import com.garcheng.gulimall.ware.vo.WareLockVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.garcheng.gulimall.ware.entity.WareSkuEntity;
 import com.garcheng.gulimall.ware.service.WareSkuService;
@@ -47,6 +45,12 @@ public class WareSkuController {
     public R getSkusStock(@RequestBody List<Long> skuIds){
         List<SkuStockTo> skuStockTos = wareSkuService.getSkusStock(skuIds);
         return R.ok().setData(skuStockTos);
+    }
+
+    @PostMapping("lock/order")
+    public R lockStock(@RequestBody WareLockVo wareLockVo){
+        List<LockStockResult> result = wareSkuService.orderLockStock(wareLockVo);
+        return R.ok().setData(result);
     }
 
 
