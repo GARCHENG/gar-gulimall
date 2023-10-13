@@ -2,13 +2,13 @@ package com.garcheng.gulimall.order.service.impl;
 
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
-import com.garcheng.gulimall.common.to.SkuStockTo;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.common.vo.MemberInfo;
 import com.garcheng.gulimall.order.constant.OrderContant;
 import com.garcheng.gulimall.order.entity.OrderItemEntity;
 import com.garcheng.gulimall.order.feign.CartFeignService;
 import com.garcheng.gulimall.order.feign.MemberFeignService;
+import com.garcheng.gulimall.order.feign.ProductFeignService;
 import com.garcheng.gulimall.order.feign.WareFeignService;
 import com.garcheng.gulimall.order.interceptor.LoginInterceptor;
 import com.garcheng.gulimall.order.to.orderCreateTo;
@@ -36,6 +36,7 @@ import com.garcheng.gulimall.common.utils.Query;
 import com.garcheng.gulimall.order.dao.OrderDao;
 import com.garcheng.gulimall.order.entity.OrderEntity;
 import com.garcheng.gulimall.order.service.OrderService;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -51,6 +52,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     CartFeignService cartFeignService;
     @Autowired
     WareFeignService wareFeignService;
+    @Autowired
+    ProductFeignService productFeignService;
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
@@ -153,7 +156,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         //创建订单
         OrderEntity orderEntity = buildOrder(orderSn);
         //创建订单项
-        List<OrderItemEntity> orderItemEntities = buildOrderItems();
+        List<OrderItemEntity> orderItemEntities = buildOrderItems(orderSn);
 
         return orderCreateTo;
     }
@@ -164,11 +167,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    private List<OrderItemEntity> buildOrderItems() throws ExecutionException, InterruptedException {
+    private List<OrderItemEntity> buildOrderItems(String orderSn) throws ExecutionException, InterruptedException {
         List<OrderItemVo> currentCartItems = cartFeignService.getCurrentCartItems();
         if (currentCartItems != null && currentCartItems.size() > 0){
             List<OrderItemEntity> itemEntityList = currentCartItems.stream().map(cartItem -> {
                 OrderItemEntity orderItemEntity = buildOrderItem(cartItem);
+                orderItemEntity.setOrderSn(orderSn);
                 return orderItemEntity;
             }).collect(Collectors.toList());
             return itemEntityList;
@@ -183,6 +187,27 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
      */
     private OrderItemEntity buildOrderItem(OrderItemVo cartItem) {
         OrderItemEntity orderItemEntity = new OrderItemEntity();
+
+        //商品spu信息
+        R r = productFeignService.getSpuInfoBySkuId(cartItem.getSkuId());
+        SpuInfoVo data = r.getData(new TypeReference<SpuInfoVo>() {});
+        orderItemEntity.setSpuId(data.getId());
+        orderItemEntity.setSpuName(data.getSpuName());
+        orderItemEntity.setSpuBrand(data.getBrandId().toString());
+
+        //商品sku信息
+        orderItemEntity.setSkuId(cartItem.getSkuId());
+        orderItemEntity.setSkuName(cartItem.getTitle());
+        orderItemEntity.setSkuPic(cartItem.getImage());
+        orderItemEntity.setSkuPrice(cartItem.getPrice());
+        orderItemEntity.setSkuQuantity(cartItem.getCount());
+        String attrValues = StringUtils.collectionToDelimitedString(cartItem.getSkuAttr(), ";");
+        orderItemEntity.setSkuAttrsVals(attrValues);
+        // TODO: 2023/10/13  优惠信息
+
+        //积分信息
+        orderItemEntity.setGiftGrowth(Integer.parseInt(cartItem.getPrice().toString()));
+        orderItemEntity.setGiftIntegration(Integer.parseInt(cartItem.getPrice().toString()));
 
         return orderItemEntity;
     }
