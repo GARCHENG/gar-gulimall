@@ -9,14 +9,13 @@ import com.garcheng.gulimall.order.feign.CartFeignService;
 import com.garcheng.gulimall.order.feign.MemberFeignService;
 import com.garcheng.gulimall.order.feign.WareFeignService;
 import com.garcheng.gulimall.order.interceptor.LoginInterceptor;
-import com.garcheng.gulimall.order.vo.ConfirmOrderVo;
-import com.garcheng.gulimall.order.vo.MemberAddressVo;
-import com.garcheng.gulimall.order.vo.OrderItemVo;
-import com.garcheng.gulimall.order.vo.SkuStockVo;
+import com.garcheng.gulimall.order.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -112,6 +111,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         stringRedisTemplate.opsForValue().set(OrderContant.USER_ORDER_REDIS_TOKEN_PREFIX+memberInfo.getId(),orderToken);
 
         return confirmOrderVo;
+    }
+
+    @Override
+    public SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo) {
+        SubmitOrderResponseVo response = new SubmitOrderResponseVo();
+        MemberInfo memberInfo = LoginInterceptor.threadLocal.get();
+        //验令牌
+        String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+        //0表示失败 1表示成功
+        Long result = stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class),
+                Arrays.asList(OrderContant.USER_ORDER_REDIS_TOKEN_PREFIX + memberInfo.getId()),
+                submitOrderVo.getOrderToken());
+        if (result == 0L){
+            return response;
+        }else {
+            //创建订单，验价格，锁库存
+            return response;
+        }
+
     }
 
 }

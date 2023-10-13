@@ -5,6 +5,8 @@ import com.garcheng.gulimall.common.utils.PageUtils;
 import com.garcheng.gulimall.order.entity.OrderEntity;
 import com.garcheng.gulimall.order.vo.ConfirmOrderVo;
 import com.garcheng.gulimall.order.vo.OrderItemVo;
+import com.garcheng.gulimall.order.vo.SubmitOrderResponseVo;
+import com.garcheng.gulimall.order.vo.SubmitOrderVo;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -21,5 +23,7 @@ public interface OrderService extends IService<OrderEntity> {
     PageUtils queryPage(Map<String, Object> params);
 
     ConfirmOrderVo confirmOrder() throws ExecutionException, InterruptedException;
+
+    SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo);
 }
 

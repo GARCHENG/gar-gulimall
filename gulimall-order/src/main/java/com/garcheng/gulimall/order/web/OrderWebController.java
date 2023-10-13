@@ -3,6 +3,7 @@ package com.garcheng.gulimall.order.web;
 import com.garcheng.gulimall.order.service.OrderService;
 import com.garcheng.gulimall.order.vo.ConfirmOrderVo;
 import com.garcheng.gulimall.order.vo.OrderItemVo;
+import com.garcheng.gulimall.order.vo.SubmitOrderResponseVo;
 import com.garcheng.gulimall.order.vo.SubmitOrderVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,7 +28,12 @@ public class OrderWebController {
 
     @PostMapping("/submitOrder")
     public String submitOrder(SubmitOrderVo submitOrderVo){
-        //创建订单，验令牌，验价格，锁库存
-        return null;
+
+        SubmitOrderResponseVo response = orderService.submitOrder(submitOrderVo);
+        if (response.getCode() == 0){
+            return "redirect:http://order.gulimall.com/pay";
+        }else {
+            return "redirect:/toTrade";
+        }
     }
 }
