@@ -31,7 +31,7 @@ public class OrderWebController {
 
         SubmitOrderResponseVo response = orderService.submitOrder(submitOrderVo);
         if (response.getCode() == 0){
-            return "redirect:http://order.gulimall.com/pay";
+            return "pay";
         }else {
             return "redirect:/toTrade";
         }

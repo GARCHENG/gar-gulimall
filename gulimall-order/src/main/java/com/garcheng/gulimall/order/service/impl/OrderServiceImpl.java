@@ -1,14 +1,17 @@
 package com.garcheng.gulimall.order.service.impl;
 
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.garcheng.gulimall.common.to.SkuStockTo;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.common.vo.MemberInfo;
 import com.garcheng.gulimall.order.constant.OrderContant;
+import com.garcheng.gulimall.order.entity.OrderItemEntity;
 import com.garcheng.gulimall.order.feign.CartFeignService;
 import com.garcheng.gulimall.order.feign.MemberFeignService;
 import com.garcheng.gulimall.order.feign.WareFeignService;
 import com.garcheng.gulimall.order.interceptor.LoginInterceptor;
+import com.garcheng.gulimall.order.to.orderCreateTo;
 import com.garcheng.gulimall.order.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -39,6 +42,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 @Service("orderService")
 public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> implements OrderService {
+
+    public static ThreadLocal<SubmitOrderVo> submitOrderVoThreadLocal = new ThreadLocal<>();
 
     @Autowired
     MemberFeignService memberFeignService;
@@ -92,29 +97,30 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 e.printStackTrace();
             }
             confirmOrderVo.setOrderItemVos(currentCartItems);
-        }, executor).thenRunAsync(() ->{
+        }, executor).thenRunAsync(() -> {
             List<OrderItemVo> orderItemVos = confirmOrderVo.getOrderItemVos();
             List<Long> skuIdS = orderItemVos.stream().map(item -> item.getSkuId()).collect(Collectors.toList());
             R skusStock = wareFeignService.getSkusStock(skuIdS);
-                List<SkuStockVo> data = skusStock.getData(new TypeReference<List<SkuStockVo>>() {});
-                if (data != null && data.size() > 0) {
-                    Map<Long, Boolean> stockMap = data.stream().collect(Collectors.toMap(SkuStockVo::getSkuId, SkuStockVo::getHasStock));
-                    confirmOrderVo.setHasStockMap(stockMap);
-                }
-        },executor);
+            List<SkuStockVo> data = skusStock.getData(new TypeReference<List<SkuStockVo>>() {
+            });
+            if (data != null && data.size() > 0) {
+                Map<Long, Boolean> stockMap = data.stream().collect(Collectors.toMap(SkuStockVo::getSkuId, SkuStockVo::getHasStock));
+                confirmOrderVo.setHasStockMap(stockMap);
+            }
+        }, executor);
 
-        CompletableFuture.allOf(getAddressTask,getCurrentCartItemsTask).get();
+        CompletableFuture.allOf(getAddressTask, getCurrentCartItemsTask).get();
 
         // TODO: 2023/10/11 防止重复提交
-        String orderToken = UUID.randomUUID().toString().replace("-","");
+        String orderToken = UUID.randomUUID().toString().replace("-", "");
         confirmOrderVo.setOrderToken(orderToken);
-        stringRedisTemplate.opsForValue().set(OrderContant.USER_ORDER_REDIS_TOKEN_PREFIX+memberInfo.getId(),orderToken);
+        stringRedisTemplate.opsForValue().set(OrderContant.USER_ORDER_REDIS_TOKEN_PREFIX + memberInfo.getId(), orderToken);
 
         return confirmOrderVo;
     }
 
     @Override
-    public SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo) {
+    public SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo) throws ExecutionException, InterruptedException {
         SubmitOrderResponseVo response = new SubmitOrderResponseVo();
         MemberInfo memberInfo = LoginInterceptor.threadLocal.get();
         //验令牌
@@ -123,12 +129,83 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         Long result = stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class),
                 Arrays.asList(OrderContant.USER_ORDER_REDIS_TOKEN_PREFIX + memberInfo.getId()),
                 submitOrderVo.getOrderToken());
-        if (result == 0L){
+        if (result == 0L) {
+            response.setCode(1);
             return response;
-        }else {
+        } else {
+            submitOrderVoThreadLocal.set(submitOrderVo);
             //创建订单，验价格，锁库存
+            orderCreateTo orderCreateTo = createOrder();
             return response;
         }
+
+    }
+
+    /**
+     * 创建订单to
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    private orderCreateTo createOrder() throws ExecutionException, InterruptedException {
+        orderCreateTo orderCreateTo = new orderCreateTo();
+        String orderSn = IdWorker.getTimeId();
+        //创建订单
+        OrderEntity orderEntity = buildOrder(orderSn);
+        //创建订单项
+        List<OrderItemEntity> orderItemEntities = buildOrderItems();
+
+        return orderCreateTo;
+    }
+
+    /**
+     * 创建所有订单项信息
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    private List<OrderItemEntity> buildOrderItems() throws ExecutionException, InterruptedException {
+        List<OrderItemVo> currentCartItems = cartFeignService.getCurrentCartItems();
+        if (currentCartItems != null && currentCartItems.size() > 0){
+            List<OrderItemEntity> itemEntityList = currentCartItems.stream().map(cartItem -> {
+                OrderItemEntity orderItemEntity = buildOrderItem(cartItem);
+                return orderItemEntity;
+            }).collect(Collectors.toList());
+            return itemEntityList;
+        }
+        return null;
+    }
+
+    /**
+     * 创建订单项信息
+     * @param cartItem
+     * @return
+     */
+    private OrderItemEntity buildOrderItem(OrderItemVo cartItem) {
+        OrderItemEntity orderItemEntity = new OrderItemEntity();
+
+        return orderItemEntity;
+    }
+
+    private OrderEntity buildOrder(String orderSn) {
+        SubmitOrderVo submitOrderVo = submitOrderVoThreadLocal.get();
+        R result = wareFeignService.getFare(submitOrderVo.getAddrId());
+        OrderEntity orderEntity = new OrderEntity();
+        FareVo fareVoResp = result.getData(new TypeReference<FareVo>() {
+        });
+        if (fareVoResp != null) {
+            orderEntity.setOrderSn(orderSn);
+            orderEntity.setFreightAmount(fareVoResp.getFare());
+            orderEntity.setReceiverCity(fareVoResp.getAddressVo().getCity());
+            orderEntity.setReceiverDetailAddress(fareVoResp.getAddressVo().getDetailAddress());
+            orderEntity.setReceiverName(fareVoResp.getAddressVo().getName());
+            orderEntity.setReceiverPhone(fareVoResp.getAddressVo().getPhone());
+            orderEntity.setReceiverPostCode(fareVoResp.getAddressVo().getPostCode());
+            orderEntity.setReceiverProvince(fareVoResp.getAddressVo().getProvince());
+            orderEntity.setReceiverRegion(fareVoResp.getAddressVo().getRegion());
+        }
+
+        return orderEntity;
 
     }
 
