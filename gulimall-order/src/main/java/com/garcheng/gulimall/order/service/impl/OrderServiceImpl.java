@@ -127,7 +127,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return confirmOrderVo;
     }
 
-    @Transactional(rollbackFor = NoStockException.class)
+//    @Transactional(rollbackFor = NoStockException.class)
+    //只能管住自己的事务，已经执行完成的分布式远程调用不能进行回滚
+    //本地事务失效（同一个对象内事务互调：绕过了代理对象，事务使用代理对象来控制） 解决：使用代理对象来调用
+    //0）、导入 spring-boot-starter-aop
+    //1）、@EnableTransactionManagement(proxyTargetClass = true)
+    //2）、@EnableAspectJAutoProxy(exposeProxy=true)
+    //3）、AopContext.currentProxy() 调用方法
+    @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo) throws ExecutionException, InterruptedException {
         SubmitOrderResponseVo response = new SubmitOrderResponseVo();
@@ -164,6 +171,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 R r = wareFeignService.lockStock(wareLockVo);
                 if (r.getCode() == 0){
                     //锁成功了
+                    // TODO: 2023/10/16 远程扣减积分
                     response.setOrderEntity(orderCreateTo.getOrderEntity());
                     return response;
                 }else {
