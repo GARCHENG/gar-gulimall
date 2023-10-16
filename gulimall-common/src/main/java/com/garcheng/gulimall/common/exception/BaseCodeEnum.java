@@ -17,6 +17,8 @@ public enum BaseCodeEnum {
 
     ACCOUNT_NOT_FIND_EXCEPTION(12003,"没有找到该用户"),
 
+    NO_STOCK_EXCEPTION(21000,"库存锁定失败"),
+
     OAUTH_LOGIN_EXCEPTION(12004,"第三方登录出现异常");
 
     private Integer code;

@@ -7,6 +7,7 @@ import com.garcheng.gulimall.common.vo.MemberInfo;
 import com.garcheng.gulimall.order.constant.OrderContant;
 import com.garcheng.gulimall.order.entity.OrderItemEntity;
 import com.garcheng.gulimall.order.enume.OrderStatusEnum;
+import com.garcheng.gulimall.order.exception.NoStockException;
 import com.garcheng.gulimall.order.feign.CartFeignService;
 import com.garcheng.gulimall.order.feign.MemberFeignService;
 import com.garcheng.gulimall.order.feign.ProductFeignService;
@@ -126,7 +127,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return confirmOrderVo;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = NoStockException.class)
     @Override
     public SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo) throws ExecutionException, InterruptedException {
         SubmitOrderResponseVo response = new SubmitOrderResponseVo();
@@ -137,6 +138,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         Long result = stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class),
                 Arrays.asList(OrderContant.USER_ORDER_REDIS_TOKEN_PREFIX + memberInfo.getId()),
                 submitOrderVo.getOrderToken());
+        response.setCode(0);
         if (result == 0L) {
             response.setCode(1);
             return response;
@@ -158,18 +160,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                     return orderItemLockVo;
                 }).collect(Collectors.toList());
                 wareLockVo.setLocks(lockVoList);
+                //远程锁库存
                 R r = wareFeignService.lockStock(wareLockVo);
                 if (r.getCode() == 0){
                     //锁成功了
+                    response.setOrderEntity(orderCreateTo.getOrderEntity());
+                    return response;
                 }else {
-
+                    throw new NoStockException();
                 }
             }else{
                 response.setCode(2);
                 return response;
             }
 
-            return response;
         }
 
     }
