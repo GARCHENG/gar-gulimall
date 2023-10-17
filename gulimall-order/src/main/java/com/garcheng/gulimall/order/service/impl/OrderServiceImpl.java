@@ -16,6 +16,7 @@ import com.garcheng.gulimall.order.interceptor.LoginInterceptor;
 import com.garcheng.gulimall.order.service.OrderItemService;
 import com.garcheng.gulimall.order.to.orderCreateTo;
 import com.garcheng.gulimall.order.vo.*;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -134,6 +135,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     //1）、@EnableTransactionManagement(proxyTargetClass = true)
     //2）、@EnableAspectJAutoProxy(exposeProxy=true)
     //3）、AopContext.currentProxy() 调用方法
+    @GlobalTransactional
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo) throws ExecutionException, InterruptedException {
@@ -172,6 +174,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 if (r.getCode() == 0){
                     //锁成功了
                     // TODO: 2023/10/16 远程扣减积分
+//                    int i = 1/0;
                     response.setOrderEntity(orderCreateTo.getOrderEntity());
                     return response;
                 }else {
@@ -192,7 +195,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         save(orderEntity);
 
         List<OrderItemEntity> orderItems = orderCreateTo.getOrderItems();
-        orderItemService.saveBatch(orderItems);
+//        orderItemService.saveBatch(orderItems);
+        for (OrderItemEntity orderItem : orderItems) {
+            orderItemService.save(orderItem);
+        }
 
     }
 
