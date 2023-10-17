@@ -21,3 +21,30 @@
 #
 #server:
 #  port: 7004
+
+
+#server:
+#  port: 7005
+#spring:
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: 127.0.0.1:8848
+#  application:
+#    name: gulimall-ware
+#  jackson:
+#    date-format: yyyy-MM-dd HH:mm:ss
+#  rabbitmq:
+#    host: gulimall.com
+#    virtual-host: /
+#    publisher-confirms: true
+#    publisher-returns: true
+#    template:
+#      mandatory: true
+#    #消费端手动确认ack
+#    listener:
+#      simple:
+#        acknowledge-mode: manual
+#logging:
+#  level:
+#    com.garcheng.gulimall.ware: debug
