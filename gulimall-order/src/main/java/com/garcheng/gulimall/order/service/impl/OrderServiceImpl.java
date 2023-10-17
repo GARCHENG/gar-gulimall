@@ -135,7 +135,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     //1）、@EnableTransactionManagement(proxyTargetClass = true)
     //2）、@EnableAspectJAutoProxy(exposeProxy=true)
     //3）、AopContext.currentProxy() 调用方法
-    @GlobalTransactional
+//    @GlobalTransactional   seata 的AT模式不适用高并发的场景（适用于大保存情景）
     @Transactional
     @Override
     public SubmitOrderResponseVo submitOrder(SubmitOrderVo submitOrderVo) throws ExecutionException, InterruptedException {
