@@ -53,11 +53,12 @@ public class MyMqConfig {
         return binding;
     }
 
-    @RabbitListener(queues = {"order.release.order.queue"})
-    public void listener(OrderEntity orderEntity, Message message , Channel channel) throws IOException {
-        System.out.println(orderEntity);
-        channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+    @Bean
+    public Binding OrderReleaseOtherBinding(){
+        Binding binding = new Binding("stock.release.stock.queue", Binding.DestinationType.QUEUE,"order-event-exchange","order.release.other.#",null);
+        return binding;
     }
+
 
 
 

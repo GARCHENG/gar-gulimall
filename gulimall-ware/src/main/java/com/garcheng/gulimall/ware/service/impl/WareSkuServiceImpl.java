@@ -2,6 +2,7 @@ package com.garcheng.gulimall.ware.service.impl;
 
 import com.alibaba.fastjson.TypeReference;
 import com.garcheng.gulimall.common.to.SkuStockTo;
+import com.garcheng.gulimall.common.to.mq.OrderTo;
 import com.garcheng.gulimall.common.to.mq.StockLockDetail;
 import com.garcheng.gulimall.common.to.mq.StockLockedTo;
 import com.garcheng.gulimall.common.utils.R;
@@ -17,6 +18,7 @@ import com.garcheng.gulimall.ware.vo.OrderVo;
 import com.garcheng.gulimall.ware.vo.WareLockVo;
 import com.rabbitmq.client.Channel;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -42,7 +44,7 @@ import com.garcheng.gulimall.ware.entity.WareSkuEntity;
 import com.garcheng.gulimall.ware.service.WareSkuService;
 import org.springframework.transaction.annotation.Transactional;
 
-
+@Slf4j
 @Service("wareSkuService")
 public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> implements WareSkuService {
 
@@ -170,12 +172,14 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 if (order == null || order.getStatus() ==4){
                     //订单为空，当时下单失败，需解锁
                     //订单已关闭，需解锁
-                    if (byId.getLockStatus() != 2){
+                    if (byId.getLockStatus() == 1){
                         unLockStock(detail.getSkuId(),detail.getSkuNum(),detail.getWareId());
                         update.setLockStatus(2);
                         wareOrderTaskDetailService.updateById(update);
+                        log.warn("TaskDetail【{}】解锁成功",update.getId());
+                    }else {
+                        log.warn("TaskDetail【{}】已经被解锁成功",update.getId());
                     }
-
                 }else {
                     //无需解锁
                     update.setLockStatus(3);
@@ -183,12 +187,33 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 }
             }else {
                 //解锁失败，重新返回队列等待处理
-                throw new RuntimeException("解锁失败，重新返回队列等待处理");
+                throw new RuntimeException("远程调用失败，重新返回队列等待处理");
             }
 
         }else {
             //为空 ，则在锁库存中出现异常，已经回滚了之前已经锁了的库存，无需解锁
             //手动确认
+        }
+    }
+
+    @Transactional
+    @Override
+    public void ReleaseStock(OrderTo orderTo) {
+        log.warn("接收到关单时主动释放库存队列的消息");
+        String orderSn = orderTo.getOrderSn();
+        WareOrderTaskEntity taskEntity = wareOrderTaskService.getOne(new QueryWrapper<WareOrderTaskEntity>()
+                .eq("order_sn", orderSn));
+        List<WareOrderTaskDetailEntity> detailEntities = wareOrderTaskDetailService.list(new QueryWrapper<WareOrderTaskDetailEntity>()
+                .eq("task_id", taskEntity.getId()).eq("lock_status", 1));
+        if (detailEntities != null && detailEntities.size() > 0) {
+            for (WareOrderTaskDetailEntity detailEntity : detailEntities) {
+                unLockStock(detailEntity.getSkuId(),detailEntity.getSkuNum(),detailEntity.getWareId());
+                WareOrderTaskDetailEntity update = new WareOrderTaskDetailEntity();
+                update.setId(detailEntity.getId());
+                update.setLockStatus(2);
+                wareOrderTaskDetailService.updateById(update);
+                log.warn("TaskDetail【{}】解锁成功",detailEntity.getId());
+            }
         }
     }
 

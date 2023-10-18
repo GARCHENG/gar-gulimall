@@ -1,6 +1,7 @@
 package com.garcheng.gulimall.ware.listener;
 
 import com.alibaba.fastjson.TypeReference;
+import com.garcheng.gulimall.common.to.mq.OrderTo;
 import com.garcheng.gulimall.common.to.mq.StockLockDetail;
 import com.garcheng.gulimall.common.to.mq.StockLockedTo;
 import com.garcheng.gulimall.common.utils.R;
@@ -37,4 +38,16 @@ public class StockReleaseListener {
         }
 
     }
+
+    //处理关单时主动解锁库存
+    @RabbitHandler
+    public void handleStockRelease(OrderTo orderTo ,  Message message , Channel channel) throws IOException {
+        try {
+            wareSkuService.ReleaseStock(orderTo);
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+        }catch (Exception e){
+            channel.basicReject(message.getMessageProperties().getDeliveryTag(),true);
+        }
+    }
+
 }
