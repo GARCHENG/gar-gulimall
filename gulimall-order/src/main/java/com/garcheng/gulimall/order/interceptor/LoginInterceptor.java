@@ -3,6 +3,7 @@ package com.garcheng.gulimall.order.interceptor;
 import com.garcheng.gulimall.common.constant.AuthRedisConstant;
 import com.garcheng.gulimall.common.vo.MemberInfo;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,10 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        boolean match = new AntPathMatcher().match("/order/order/status/**", request.getRequestURI());
+        if (match){
+            return true;
+        }
         MemberInfo loginUser = (MemberInfo) request.getSession().getAttribute(AuthRedisConstant.LOGIN_USER);
         if (loginUser !=null){
             threadLocal.set(loginUser);

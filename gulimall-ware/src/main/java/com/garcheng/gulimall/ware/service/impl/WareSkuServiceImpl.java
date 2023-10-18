@@ -44,7 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service("wareSkuService")
-@RabbitListener(queues = "stock.release.stock.queue")
 public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> implements WareSkuService {
 
     @Autowired
@@ -151,16 +150,9 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         return lockSuccess;
     }
 
-    @Data
-    class SkuWareHasStock {
-        private Long skuId;
-        private Integer num;
-        private List<Long> wareIds;
-
-    }
-    //处理解锁库存
-    @RabbitHandler
-    public void handleStockRelease(StockLockedTo stockLockedTo , Message message , Channel channel) throws IOException {
+    @Override
+    public void ReleaseStock(StockLockedTo stockLockedTo) {
+        log.warn("接收到释放库存队列的消息");
         Long taskId = stockLockedTo.getTaskId();
         StockLockDetail detail = stockLockedTo.getDetail();
         WareOrderTaskDetailEntity byId = wareOrderTaskDetailService.getById(detail.getId());
@@ -178,26 +170,36 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 if (order == null || order.getStatus() ==4){
                     //订单为空，当时下单失败，需解锁
                     //订单已关闭，需解锁
-                    unLockStock(detail.getSkuId(),detail.getSkuNum(),detail.getWareId());
-                    update.setLockStatus(2);
-                    wareOrderTaskDetailService.updateById(update);
-                    channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+                    if (byId.getLockStatus() != 2){
+                        unLockStock(detail.getSkuId(),detail.getSkuNum(),detail.getWareId());
+                        update.setLockStatus(2);
+                        wareOrderTaskDetailService.updateById(update);
+                    }
+
                 }else {
                     //无需解锁
                     update.setLockStatus(3);
-                    channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+                    wareOrderTaskDetailService.updateById(update);
                 }
             }else {
                 //解锁失败，重新返回队列等待处理
-                channel.basicReject(message.getMessageProperties().getDeliveryTag(),true);
+                throw new RuntimeException("解锁失败，重新返回队列等待处理");
             }
 
         }else {
             //为空 ，则在锁库存中出现异常，已经回滚了之前已经锁了的库存，无需解锁
             //手动确认
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
         }
     }
+
+    @Data
+    class SkuWareHasStock {
+        private Long skuId;
+        private Integer num;
+        private List<Long> wareIds;
+
+    }
+
 
     private void unLockStock(Long skuId, Integer skuNum, Long wareId) {
         baseMapper.unLockStock(skuId,skuNum,wareId);
