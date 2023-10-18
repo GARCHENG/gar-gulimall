@@ -1,12 +1,25 @@
 package com.garcheng.gulimall.ware.service.impl;
 
 import com.garcheng.gulimall.common.to.SkuStockTo;
+import com.garcheng.gulimall.common.to.mq.StockLockDetail;
+import com.garcheng.gulimall.common.to.mq.StockLockedTo;
+import com.garcheng.gulimall.ware.entity.WareOrderTaskDetailEntity;
+import com.garcheng.gulimall.ware.entity.WareOrderTaskEntity;
 import com.garcheng.gulimall.ware.exception.NoStockException;
+import com.garcheng.gulimall.ware.service.WareOrderTaskDetailService;
+import com.garcheng.gulimall.ware.service.WareOrderTaskService;
 import com.garcheng.gulimall.ware.vo.LockStockResult;
 import com.garcheng.gulimall.ware.vo.OrderItemLockVo;
 import com.garcheng.gulimall.ware.vo.WareLockVo;
+import com.rabbitmq.client.Channel;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +39,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @Service("wareSkuService")
+@RabbitListener(queues = "stock.release.stock.queue")
 public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> implements WareSkuService {
+
+    @Autowired
+    WareOrderTaskService wareOrderTaskService;
+    @Autowired
+    WareOrderTaskDetailService wareOrderTaskDetailService;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -60,9 +82,16 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         return stockToList;
     }
 
-    @Transactional(rollbackFor = NoStockException.class)
+//    @Transactional(rollbackFor = NoStockException.class)
+    @Transactional
     @Override
     public boolean orderLockStock(WareLockVo wareLockVo) {
+
+        //保存锁库存的任务信息，方便后期回滚等操作
+        WareOrderTaskEntity wareOrderTaskEntity = new WareOrderTaskEntity();
+        wareOrderTaskEntity.setOrderSn(wareLockVo.getOrderSn());
+        wareOrderTaskService.save(wareOrderTaskEntity);
+
         boolean lockSuccess = true;
         List<OrderItemLockVo> locks = wareLockVo.getLocks();
         List<SkuWareHasStock> skuWareHasStocks = locks.stream().map(o -> {
@@ -89,6 +118,16 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                     if (i ==1){
                         //锁定库存成功
                         skuStocked = true;
+                        //保存库存锁定任务详情表
+                        WareOrderTaskDetailEntity wareOrderTaskDetailEntity = new WareOrderTaskDetailEntity(null, skuWareHasStock.getSkuId(), null, skuWareHasStock.getNum(), wareOrderTaskEntity.getId(), wareId, 1);
+                        wareOrderTaskDetailService.save(wareOrderTaskDetailEntity);
+                        // TODO: 2023/10/18 告诉mq锁库存成功
+                        StockLockedTo stockLockedTo = new StockLockedTo();
+                        stockLockedTo.setTaskId(wareOrderTaskEntity.getId());
+                        StockLockDetail detail = new StockLockDetail();
+                        BeanUtils.copyProperties(wareOrderTaskDetailEntity,detail);
+                        stockLockedTo.setDetail(detail);
+                        rabbitTemplate.convertAndSend("stock-event-exchange","stock.locked",stockLockedTo);
                         break;
                     }else {
                         //重试下一个仓库
@@ -111,5 +150,19 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         private List<Long> wareIds;
 
     }
+    //处理解锁库存
+    @RabbitHandler
+    public void handleStockRelease(StockLockedTo stockLockedTo , Message message , Channel channel){
+        Long taskId = stockLockedTo.getTaskId();
+        StockLockDetail detail = stockLockedTo.getDetail();
+        WareOrderTaskDetailEntity byId = wareOrderTaskDetailService.getById(detail.getId());
+
+        if (byId != null) {
+            //如果不为空，1）用户直接取消 2）用户过期未支付 3）下单操作锁库存成功后出现异常，需手动补偿进行回滚
+        }else {
+            //为空 ，则在锁库存中出现异常，已经回滚了之前已经锁了的库存
+        }
+    }
+
 
 }
