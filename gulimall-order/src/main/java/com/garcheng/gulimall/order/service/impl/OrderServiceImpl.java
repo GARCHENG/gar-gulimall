@@ -216,8 +216,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             //向mq发送消息，通知库存服务关单了，主动去解锁库存
             OrderTo orderTo = new OrderTo();
             BeanUtils.copyProperties(byId,orderTo);
+            // TODO: 2023/10/19 保证消息正常发出 做好日志记录（在数据库保存详细信息
+            // TODO: 2023/10/19  定时扫描数据库，发送失败的重发
             rabbitTemplate.convertAndSend("order-event-exchange","order.release.other",orderTo);
         }
+    }
+
+    @Override
+    public PayVo getOrderPay(String orderSn) {
+        PayVo payVo = new PayVo();
+        OrderEntity orderEntity = getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderSn));
+        payVo.setOut_trade_no(orderSn);
+        BigDecimal payAmount = orderEntity.getPayAmount();
+        BigDecimal amount = payAmount.setScale(2, BigDecimal.ROUND_UP);
+        payVo.setTotal_amount(amount.toString());
+        List<OrderItemEntity> itemEntities = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", orderSn));
+        OrderItemEntity item = itemEntities.get(0);
+        payVo.setSubject(item.getSkuName()+".....");
+        payVo.setBody(item.getSkuAttrsVals());
+        return payVo;
     }
 
     private void saveOrder(orderCreateTo orderCreateTo) {

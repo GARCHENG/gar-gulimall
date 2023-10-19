@@ -83,6 +83,11 @@
             <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+            <version>4.38.105.ALL</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

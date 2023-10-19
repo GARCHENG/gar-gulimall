@@ -3,10 +3,7 @@ package com.garcheng.gulimall.order.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.garcheng.gulimall.common.utils.PageUtils;
 import com.garcheng.gulimall.order.entity.OrderEntity;
-import com.garcheng.gulimall.order.vo.ConfirmOrderVo;
-import com.garcheng.gulimall.order.vo.OrderItemVo;
-import com.garcheng.gulimall.order.vo.SubmitOrderResponseVo;
-import com.garcheng.gulimall.order.vo.SubmitOrderVo;
+import com.garcheng.gulimall.order.vo.*;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -29,5 +26,7 @@ public interface OrderService extends IService<OrderEntity> {
     OrderEntity getOrderByOrderSn(String orderSn);
 
     void closeOrder(OrderEntity orderEntity);
+
+    PayVo getOrderPay(String orderSn);
 }
 

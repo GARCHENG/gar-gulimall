@@ -39,6 +39,7 @@ public class MyRabbitMqConfig {
         rabbitTemplate.setReturnCallback(new RabbitTemplate.ReturnCallback() {
             @Override
             public void returnedMessage(Message message, int replyCode, String replyText, String exchange, String routingKey) {
+                //报错了
                 log.error("Message【{}】==>ReplyCode【{}】==>ReplyText【{}】==>Exchange【{}】==>RoutingKey【{}】", message, replyCode, replyText, exchange, routingKey);
             }
         });
