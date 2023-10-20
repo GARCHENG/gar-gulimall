@@ -17,7 +17,7 @@ public class WebController {
     @Autowired
     OrderFeignService orderFeignService;
 
-    @GetMapping("orderList.html")
+    @GetMapping("memberOrder.html")
     public String orderList(String pageNum, Model model){
 
         Map<String, Object> param = new HashMap<>();

@@ -7,6 +7,7 @@ import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.common.vo.MemberInfo;
 import com.garcheng.gulimall.order.constant.OrderContant;
 import com.garcheng.gulimall.order.entity.OrderItemEntity;
+import com.garcheng.gulimall.order.entity.PaymentInfoEntity;
 import com.garcheng.gulimall.order.enume.OrderStatusEnum;
 import com.garcheng.gulimall.order.exception.NoStockException;
 import com.garcheng.gulimall.order.feign.CartFeignService;
@@ -15,6 +16,7 @@ import com.garcheng.gulimall.order.feign.ProductFeignService;
 import com.garcheng.gulimall.order.feign.WareFeignService;
 import com.garcheng.gulimall.order.interceptor.LoginInterceptor;
 import com.garcheng.gulimall.order.service.OrderItemService;
+import com.garcheng.gulimall.order.service.PaymentInfoService;
 import com.garcheng.gulimall.order.to.orderCreateTo;
 import com.garcheng.gulimall.order.vo.*;
 import io.seata.spring.annotation.GlobalTransactional;
@@ -70,6 +72,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     OrderItemService orderItemService;
+    @Autowired
+    PaymentInfoService paymentInfoService;
 
     @Autowired
     ThreadPoolExecutor executor;
@@ -252,6 +256,28 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         page.setRecords(collect);
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public String handlePayNotify(PayAsyncVo vo) {
+        //保存交易流水 方便对账
+        PaymentInfoEntity paymentInfoEntity = new PaymentInfoEntity();
+        paymentInfoEntity.setAlipayTradeNo(vo.getTrade_no());
+        paymentInfoEntity.setOrderSn(vo.getOut_trade_no());
+        paymentInfoEntity.setTotalAmount(new BigDecimal(vo.getTotal_amount()));
+        paymentInfoEntity.setSubject(vo.getSubject());
+        paymentInfoEntity.setPaymentStatus(vo.getTrade_status());
+        paymentInfoEntity.setCallbackTime(vo.getNotify_time());
+
+        paymentInfoService.save(paymentInfoEntity);
+        //修改订单状态
+        if (vo.getTrade_status().equals("TRADE_SUCCESS") ||
+                vo.getTrade_status().equals("TRADE_FINISHED")){
+            this.baseMapper.updateOrderStatus(vo.getOut_trade_no(),OrderStatusEnum.PAYED.getCode());
+
+        }
+        return "success";
+
     }
 
     private void saveOrder(orderCreateTo orderCreateTo) {

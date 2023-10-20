@@ -16,8 +16,11 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        boolean match = new AntPathMatcher().match("/order/order/status/**", request.getRequestURI());
-        if (match){
+        AntPathMatcher antPathMatcher = new AntPathMatcher();
+        boolean Apimatch = antPathMatcher.match("/order/order/status/**", request.getRequestURI());
+        boolean payMatch = antPathMatcher.match("/alipay/notify_url", request.getRequestURI());
+
+        if (Apimatch || payMatch){
             return true;
         }
         MemberInfo loginUser = (MemberInfo) request.getSession().getAttribute(AuthRedisConstant.LOGIN_USER);

@@ -2,7 +2,9 @@ package com.garcheng.gulimall.order.dao;
 
 import com.garcheng.gulimall.order.entity.OrderEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.garcheng.gulimall.order.enume.OrderStatusEnum;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 订单
@@ -13,5 +15,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface OrderDao extends BaseMapper<OrderEntity> {
-	
+
+    void updateOrderStatus(@Param("orderSn") String orderSn, @Param("payStatus") Integer payStatus);
 }
