@@ -52,7 +52,7 @@ public class SeckillSessionController {
     @GetMapping("Lastest3DaySession")
     public R getLastest3DaySession(){
         List<SeckillSessionEntity> entities =  seckillSessionService.getLastest3DaySession();
-        return R.ok();
+        return R.ok().setData(entities);
     }
 
     /**

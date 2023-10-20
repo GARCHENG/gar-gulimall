@@ -1,5 +1,8 @@
 package com.garcheng.gulimall.coupon.service.impl;
 
+import com.garcheng.gulimall.coupon.entity.SeckillSkuRelationEntity;
+import com.garcheng.gulimall.coupon.service.SeckillSkuRelationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -23,6 +26,9 @@ import com.garcheng.gulimall.coupon.service.SeckillSessionService;
 @Service("seckillSessionService")
 public class SeckillSessionServiceImpl extends ServiceImpl<SeckillSessionDao, SeckillSessionEntity> implements SeckillSessionService {
 
+    @Autowired
+    SeckillSkuRelationService seckillSkuRelationService;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<SeckillSessionEntity> page = this.page(
@@ -35,8 +41,17 @@ public class SeckillSessionServiceImpl extends ServiceImpl<SeckillSessionDao, Se
 
     @Override
     public List<SeckillSessionEntity> getLastest3DaySession() {
+        //在最近三天的秒杀活动
         List<SeckillSessionEntity> list = list(new QueryWrapper<SeckillSessionEntity>().between("start_time", startTime(),endTime()));
-        return list;
+        if (list != null && list.size() > 0) {
+            list.stream().forEach(session -> {
+                List<SeckillSkuRelationEntity> skuRelationEntities = seckillSkuRelationService.list(new QueryWrapper<SeckillSkuRelationEntity>()
+                        .eq("promotion_session_id", session.getId()));
+                session.setRelationEntities(skuRelationEntities);
+            });
+            return list;
+        }
+        return null;
     }
 
     private String startTime() {
@@ -48,7 +63,7 @@ public class SeckillSessionServiceImpl extends ServiceImpl<SeckillSessionDao, Se
     }
 
     private String endTime() {
-        LocalDate endDay = LocalDate.now().plus(Duration.ofDays(2));
+        LocalDate endDay = LocalDate.now().plusDays(2);
         LocalTime max = LocalTime.MAX;
         LocalDateTime endDateTime = LocalDateTime.of(endDay, max);
         String end = endDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
