@@ -33,6 +33,12 @@
 #            - Path=/api/ware/**
 #          filters:
 #            - RewritePath=/api/?(?<segment>.*), /$\{segment}
+#        - id: coupon_route
+#          uri: lb://gulimall-coupon
+#          predicates:
+#            - Path=/api/coupon/**
+#          filters:
+#            - RewritePath=/api/?(?<segment>.*), /$\{segment}
 #        - id: admin_route
 #          uri: lb://renren-fast
 #          predicates:
@@ -64,6 +70,11 @@
 #          uri: lb://gulimall-order
 #          predicates:
 #            - Host=order.gulimall.com
+#
+#        - id: member_host_route
+#          uri: lb://gulimall-member
+#          predicates:
+#            - Host=member.gulimall.com
 #  application:
 #    name: gulimall-gateway
 #
