@@ -1,5 +1,6 @@
 package com.garcheng.gulimall.order.service;
 
+import com.alipay.api.AlipayApiException;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.garcheng.gulimall.common.utils.PageUtils;
 import com.garcheng.gulimall.order.entity.OrderEntity;
@@ -25,7 +26,7 @@ public interface OrderService extends IService<OrderEntity> {
 
     OrderEntity getOrderByOrderSn(String orderSn);
 
-    void closeOrder(OrderEntity orderEntity);
+    void closeOrder(OrderEntity orderEntity) throws AlipayApiException;
 
     PayVo getOrderPay(String orderSn);
 

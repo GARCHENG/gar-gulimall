@@ -1,15 +1,20 @@
 package com.garcheng.gulimall.order.config;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipayTradeCloseRequest;
 import com.alipay.api.request.AlipayTradePagePayRequest;
+import com.alipay.api.response.AlipayTradeCloseResponse;
 import com.garcheng.gulimall.order.vo.PayVo;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @ConfigurationProperties(prefix = "alipay")
+@Slf4j
 @Component
 @Data
 public class AlipayTemplate {
@@ -34,6 +39,8 @@ public class AlipayTemplate {
 
     // 字符编码格式
     private String charset = "utf-8";
+
+    private String timeoutExpress = "1m";
 
     // 支付宝网关； https://openapi.alipaydev.com/gateway.do
     private String gatewayUrl = "https://openapi-sandbox.dl.alipaydev.com/gateway.do";
@@ -64,6 +71,7 @@ public class AlipayTemplate {
                 + "\"total_amount\":\"" + total_amount + "\","
                 + "\"subject\":\"" + subject + "\","
                 + "\"body\":\"" + body + "\","
+                + "\"timeout_express\":\"" + timeoutExpress + "\","
                 + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
 
         String result = alipayClient.pageExecute(alipayRequest).getBody();
@@ -74,4 +82,19 @@ public class AlipayTemplate {
         return result;
 
     }
+
+    public void AlipayClose(String outTradeNo) throws AlipayApiException {
+        AlipayClient alipayClient = new DefaultAlipayClient(gatewayUrl, app_id, merchant_private_key, "json", charset, alipay_public_key, sign_type);
+        AlipayTradeCloseRequest request = new AlipayTradeCloseRequest();
+        JSONObject bizContent = new JSONObject();
+        bizContent.put("out_trade_no", outTradeNo);
+        request.setBizContent(bizContent.toString());
+        AlipayTradeCloseResponse response = alipayClient.execute(request);
+        if (response.isSuccess()) {
+            log.warn("支付宝手动关单成功");
+        } else {
+            log.error("支付宝手动关单失败");
+        }
+    }
+
 }

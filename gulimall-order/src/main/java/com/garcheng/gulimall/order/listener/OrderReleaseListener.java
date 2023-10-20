@@ -1,5 +1,12 @@
 package com.garcheng.gulimall.order.listener;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.AlipayClient;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipayTradeCloseRequest;
+import com.alipay.api.response.AlipayTradeCloseResponse;
+import com.garcheng.gulimall.order.config.AlipayTemplate;
 import com.garcheng.gulimall.order.entity.OrderEntity;
 import com.garcheng.gulimall.order.service.OrderService;
 import com.rabbitmq.client.Channel;

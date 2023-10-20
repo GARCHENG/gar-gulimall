@@ -1,10 +1,12 @@
 package com.garcheng.gulimall.order.service.impl;
 
 import com.alibaba.fastjson.TypeReference;
+import com.alipay.api.AlipayApiException;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.garcheng.gulimall.common.to.mq.OrderTo;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.common.vo.MemberInfo;
+import com.garcheng.gulimall.order.config.AlipayTemplate;
 import com.garcheng.gulimall.order.constant.OrderContant;
 import com.garcheng.gulimall.order.entity.OrderItemEntity;
 import com.garcheng.gulimall.order.entity.PaymentInfoEntity;
@@ -77,6 +79,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     ThreadPoolExecutor executor;
+
+    @Autowired
+    AlipayTemplate alipayTemplate;
+
 
 
     @Override
@@ -208,7 +214,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     }
 
     @Override
-    public void closeOrder(OrderEntity orderEntity) {
+    public void closeOrder(OrderEntity orderEntity) throws AlipayApiException {
         OrderEntity byId = getById(orderEntity.getId());
         if (OrderStatusEnum.CREATE_NEW.getCode() == byId.getStatus()) {
             //如果订单的状态还是待付款，则关闭订单
@@ -223,6 +229,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             // TODO: 2023/10/19 保证消息正常发出 做好日志记录（在数据库保存详细信息
             // TODO: 2023/10/19  定时扫描数据库，发送失败的重发
             rabbitTemplate.convertAndSend("order-event-exchange","order.release.other",orderTo);
+            // TODO: 2023/10/20 手动调用支付宝收单功能
+            alipayTemplate.AlipayClose(orderEntity.getOrderSn());
         }
     }
 
