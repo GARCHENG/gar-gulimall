@@ -18,7 +18,9 @@ import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -46,7 +48,8 @@ public class SeckillServiceImpl implements SeckillService {
     public void uploadSeckillSkuLastest3Day() {
         R r = couponFeignService.getLastest3DaySession();
         if (r.getCode() == 0) {
-            List<SeckillSessionVo> data = r.getData(new TypeReference<List<SeckillSessionVo>>() {});
+            List<SeckillSessionVo> data = r.getData(new TypeReference<List<SeckillSessionVo>>() {
+            });
             //保存秒杀活动信息至redis
             saveSeckillSessionInfoToRedis(data);
             //保存秒杀活动的商品信息至redis
@@ -54,16 +57,18 @@ public class SeckillServiceImpl implements SeckillService {
         }
     }
 
+
     private void saveSeckillSessionInfoToRedis(List<SeckillSessionVo> sessions) {
-        if (sessions != null && sessions.size() >0){
+        if (sessions != null && sessions.size() > 0) {
             sessions.stream().forEach(session -> {
                 long start = session.getStartTime().getTime();
                 long end = session.getEndTime().getTime();
                 String key = SECKILL_SESSIONS_PREFIX + start + "_" + end;
-                if (!stringRedisTemplate.hasKey(key)){
+                if (!stringRedisTemplate.hasKey(key)) {
                     List<SeckillSkuRelationVo> relationEntities = session.getRelationEntities();
                     if (relationEntities != null) {
-                        List<String> skuIds = relationEntities.stream().map(relation -> relation.getId()+"_"+relation.getSkuId().toString())
+                        // TODO: 2023/10/23 后面添加关联的商品无法添加至redis
+                        List<String> skuIds = relationEntities.stream().map(relation -> relation.getId() + "_" + relation.getSkuId().toString())
                                 .collect(Collectors.toList());
                         stringRedisTemplate.opsForList().leftPushAll(key, skuIds);
                     }
@@ -80,7 +85,7 @@ public class SeckillServiceImpl implements SeckillService {
                 List<SeckillSkuRelationVo> relationEntities = session.getRelationEntities();
                 if (relationEntities != null) {
                     relationEntities.stream().forEach(seckillSku -> {
-                        if (!ops.hasKey(seckillSku.getId()+"_"+seckillSku.getSkuId().toString())){
+                        if (!ops.hasKey(seckillSku.getId() + "_" + seckillSku.getSkuId().toString())) {
                             SeckillSkuRedisTo seckillSkuRedisTo = new SeckillSkuRedisTo();
                             BeanUtils.copyProperties(seckillSku, seckillSkuRedisTo);
                             //查找sku基本信息
@@ -100,13 +105,43 @@ public class SeckillServiceImpl implements SeckillService {
                             RSemaphore semaphore = redissonClient.getSemaphore(SECKILL_STOCK_SEMAPHORE + token);
                             semaphore.trySetPermits(Integer.parseInt(seckillSku.getSeckillCount().toString()));
 
-                            ops.put(seckillSku.getId()+"_"+seckillSku.getSkuId().toString(), JSON.toJSONString(seckillSkuRedisTo));
+                            ops.put(seckillSku.getId() + "_" + seckillSku.getSkuId().toString(), JSON.toJSONString(seckillSkuRedisTo));
                         }
                     });
                 }
             });
         }
 
+    }
+
+
+    @Override
+    public List<SeckillSkuRedisTo> getCurrentSeckillProduct() {
+        long currentTime = new Date().getTime();
+        Set<String> sessionKeys = stringRedisTemplate.keys(SECKILL_SESSIONS_PREFIX + "*");
+        if (sessionKeys != null && sessionKeys.size() > 0) {
+            for (String sessionKey : sessionKeys) {
+                String timeRange = sessionKey.replace("seckill:sessions:", "");
+                String[] split = timeRange.split("_");
+                if (currentTime >= Long.parseLong(split[0]) && currentTime <= Long.parseLong(split[1])) {
+                    List<String> range = stringRedisTemplate.opsForList().range(sessionKey, -100, 100);
+                    if (range != null && range.size() > 0) {
+                        BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps("seckill:skus");
+                        List<String> skuJsons = hashOps.multiGet(range);
+                        if (skuJsons != null) {
+                            List<SeckillSkuRedisTo> collect = skuJsons.stream().map(skuJson -> {
+                                SeckillSkuRedisTo seckillSkuRedisTo = JSON.parseObject(skuJson, SeckillSkuRedisTo.class);
+                                seckillSkuRedisTo.setRandomCode(null);
+                                return seckillSkuRedisTo;
+                            }).collect(Collectors.toList());
+                            return collect;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
 
