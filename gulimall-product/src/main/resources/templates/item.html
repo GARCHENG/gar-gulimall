@@ -672,9 +672,23 @@
 
                         </div>
                     </div>
-                    <div class="box-btns-two">
-                        <a href="#" id="addToCartA" th:attr="skuId=${item.info.skuId}">
+<!--                    <div class="box-btns-two">-->
+<!--                        <a href="#" id="addToCartA" th:attr="skuId=${item.info.skuId}">-->
+<!--                            加入购物车-->
+<!--                        </a>-->
+<!--                    </div>-->
+                    <div class="box-btns-two"
+                         th:if="${item.skuSeckillInfo == null }">
+                        <a class="addToCart" href="#" th:attr="skuId=${item.info.skuId}">
                             加入购物车
+                        </a>
+                    </div>
+
+                    <div class="box-btns-two"
+                         th:if="${item.skuSeckillInfo != null && (#dates.createNow().getTime() >= item.skuSeckillInfo.startTime && #dates.createNow().getTime() <= item.skuSeckillInfo.endTime)}">
+                        <a class="seckill" href="#"
+                           th:attr="skuId=${item.info.skuId},sessionId=${item.skuSeckillInfo.promotionSessionId},code=${item.skuSeckillInfo.randomCode}">
+                            立即抢购
                         </a>
                     </div>
                     <div class="box-btns-three">
@@ -1596,12 +1610,25 @@
         $("a[class='sku_attr_value checked']").parent().css({"border": "solid 1px red"});
     })
 
-    $("#addToCartA").click(function () {
+    $(".addToCartA").click(function () {
         var num = $("#numInput").val();
         var skuId = $(this).attr("skuId")
         location.href = "http://cart.gulimall.com/addToCart?skuId="+skuId+"&num="+num;
 
     })
+
+    $(".seckill").click(function () {
+        var isLogin = [[${session.loginUser != null}]];     //true
+        if (isLogin) {
+            var killId = $(this).attr("sessionid") + "-" + $(this).attr("skuid");
+            var code = $(this).attr("code");
+            var num = $("#numInput").val();
+            location.href = "http://seckill.gulimall.com/kill?killId=" + killId + "&key=" + code + "&num=" + num;
+        } else {
+            alert("秒杀请先登录");
+        }
+        return false;
+    });
 </script>
 
 </html>
