@@ -20,5 +20,7 @@ public class SkuItemVo {
 
     private List<SpuItemAttrGroupVo> attrGroupVos;
 
+    private SkuSeckillVo skuSeckillInfo;
+
 
 }

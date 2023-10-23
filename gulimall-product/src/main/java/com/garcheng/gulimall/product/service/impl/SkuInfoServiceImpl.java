@@ -1,10 +1,14 @@
 package com.garcheng.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
+import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.product.entity.SkuImagesEntity;
 import com.garcheng.gulimall.product.entity.SpuInfoDescEntity;
+import com.garcheng.gulimall.product.feign.SeckillFeignService;
 import com.garcheng.gulimall.product.service.*;
 import com.garcheng.gulimall.product.vo.SkuItemSaleAttrVo;
 import com.garcheng.gulimall.product.vo.SkuItemVo;
+import com.garcheng.gulimall.product.vo.SkuSeckillVo;
 import com.garcheng.gulimall.product.vo.SpuItemAttrGroupVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +42,9 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
     private AttrGroupService attrGroupService;
     @Autowired
     private SkuSaleAttrValueService skuSaleAttrValueService;
+
+    @Autowired
+    SeckillFeignService seckillFeignService;
 
     @Autowired
     ThreadPoolExecutor executor;
@@ -101,6 +108,16 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
             return skuInfoEntity;
         }, executor);
 
+        // TODO: 2023/10/23  封装该商品的秒杀预告信息
+        CompletableFuture<Void> seckillFuture = CompletableFuture.runAsync(() -> {
+            R r = seckillFeignService.getSkuSeckillInfo(skuId);
+            if (r.getCode() == 0){
+                SkuSeckillVo data = r.getData(new TypeReference<SkuSeckillVo>() {});
+                skuItemVo.setSkuSeckillInfo(data);
+            }
+        }, executor);
+
+
         CompletableFuture<Void> imagesFuture = CompletableFuture.runAsync(() -> {
             List<SkuImagesEntity> skuImagesEntities = skuImagesService.getImagesBySkuId(skuId);
             skuItemVo.setSkuImages(skuImagesEntities);
@@ -121,7 +138,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
             skuItemVo.setAttrGroupVos(attrGroupVos);
         }, executor);
 
-        CompletableFuture.allOf(imagesFuture,despFuture,saleAttrVosFuture,attrGroupVoFuture).get();
+
+        CompletableFuture.allOf(imagesFuture,despFuture,saleAttrVosFuture,attrGroupVoFuture,seckillFuture).get();
 
         return skuItemVo;
     }

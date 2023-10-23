@@ -144,5 +144,31 @@ public class SeckillServiceImpl implements SeckillService {
         return null;
     }
 
+    @Override
+    public SeckillSkuRedisTo getSeckillInfoBySkuId(Long skuId) {
+        BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SECKILL_SKUS_PREFIX);
+        Set<String> keys = hashOps.keys();
+        if (keys != null) {
+            String regx = "\\d_" + skuId;
+            for (String key : keys) {
+                if (key.matches(regx)) {
+                    String skuSeckillJson = hashOps.get(key);
+                    SeckillSkuRedisTo to = JSON.parseObject(skuSeckillJson, SeckillSkuRedisTo.class);
+                    // TODO: 2023/10/23 随机码处理
+                    //判断当前时间是不是秒杀时间
+                    Long startTime = to.getStartTime();
+                    Long endTime = to.getEndTime();
+                    long current = new Date().getTime();
+                    if (current >= startTime && current <= endTime) {
+                    } else {
+                        to.setRandomCode(null);
+                    }
+                    return to;
+                }
+            }
+        }
+        return null;
+    }
+
 
 }
