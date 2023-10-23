@@ -60,11 +60,13 @@ public class SeckillServiceImpl implements SeckillService {
                 long start = session.getStartTime().getTime();
                 long end = session.getEndTime().getTime();
                 String key = SECKILL_SESSIONS_PREFIX + start + "_" + end;
-                List<SeckillSkuRelationVo> relationEntities = session.getRelationEntities();
-                if (relationEntities != null) {
-                    List<String> skuIds = relationEntities.stream().map(relation -> relation.getSkuId().toString())
-                            .collect(Collectors.toList());
-                    stringRedisTemplate.opsForList().leftPushAll(key, skuIds);
+                if (!stringRedisTemplate.hasKey(key)){
+                    List<SeckillSkuRelationVo> relationEntities = session.getRelationEntities();
+                    if (relationEntities != null) {
+                        List<String> skuIds = relationEntities.stream().map(relation -> relation.getId()+"_"+relation.getSkuId().toString())
+                                .collect(Collectors.toList());
+                        stringRedisTemplate.opsForList().leftPushAll(key, skuIds);
+                    }
                 }
             });
         }
@@ -78,26 +80,28 @@ public class SeckillServiceImpl implements SeckillService {
                 List<SeckillSkuRelationVo> relationEntities = session.getRelationEntities();
                 if (relationEntities != null) {
                     relationEntities.stream().forEach(seckillSku -> {
-                        SeckillSkuRedisTo seckillSkuRedisTo = new SeckillSkuRedisTo();
-                        BeanUtils.copyProperties(seckillSku, seckillSkuRedisTo);
-                        //查找sku基本信息
-                        R r = productFeignService.getSkuInfo(seckillSku.getSkuId());
-                        if (r.getCode() == 0) {
-                            SkuVo skuInfo = r.getData("skuInfo", new TypeReference<SkuVo>() {
-                            });
-                            seckillSkuRedisTo.setSkuVo(skuInfo);
-                        }
-                        //设置时间
-                        seckillSkuRedisTo.setStartTime(session.getStartTime().getTime());
-                        seckillSkuRedisTo.setEndTime(session.getEndTime().getTime());
-                        //设置商品的秒杀随机码
-                        String token = UUID.randomUUID().toString().replace("-", "");
-                        seckillSkuRedisTo.setRandomCode(token);
-                        //设置分布式库存信号量(redis) 带随机码来减 限流
-                        RSemaphore semaphore = redissonClient.getSemaphore(SECKILL_STOCK_SEMAPHORE + token);
-                        semaphore.trySetPermits(Integer.parseInt(seckillSku.getSeckillCount().toString()));
+                        if (!ops.hasKey(seckillSku.getId()+"_"+seckillSku.getSkuId().toString())){
+                            SeckillSkuRedisTo seckillSkuRedisTo = new SeckillSkuRedisTo();
+                            BeanUtils.copyProperties(seckillSku, seckillSkuRedisTo);
+                            //查找sku基本信息
+                            R r = productFeignService.getSkuInfo(seckillSku.getSkuId());
+                            if (r.getCode() == 0) {
+                                SkuVo skuInfo = r.getData("skuInfo", new TypeReference<SkuVo>() {
+                                });
+                                seckillSkuRedisTo.setSkuVo(skuInfo);
+                            }
+                            //设置时间
+                            seckillSkuRedisTo.setStartTime(session.getStartTime().getTime());
+                            seckillSkuRedisTo.setEndTime(session.getEndTime().getTime());
+                            //设置商品的秒杀随机码
+                            String token = UUID.randomUUID().toString().replace("-", "");
+                            seckillSkuRedisTo.setRandomCode(token);
+                            //设置分布式库存信号量(redis) 带随机码来减 限流
+                            RSemaphore semaphore = redissonClient.getSemaphore(SECKILL_STOCK_SEMAPHORE + token);
+                            semaphore.trySetPermits(Integer.parseInt(seckillSku.getSeckillCount().toString()));
 
-                        ops.put(seckillSku.getSkuId().toString(), JSON.toJSONString(seckillSkuRedisTo));
+                            ops.put(seckillSku.getId()+"_"+seckillSku.getSkuId().toString(), JSON.toJSONString(seckillSkuRedisTo));
+                        }
                     });
                 }
             });
