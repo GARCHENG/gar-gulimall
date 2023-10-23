@@ -1,5 +1,6 @@
 package com.garcheng.gulimall.seckill.controller;
 
+import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.seckill.service.SeckillService;
 import com.garcheng.gulimall.seckill.to.SeckillSkuRedisTo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,8 @@ public class SeckillController {
 
     @GetMapping("/currentSeckillProduct")
     @ResponseBody
-    public List<SeckillSkuRedisTo> getCurrentSeckillProduct(){
-        return seckillService.getCurrentSeckillProduct();
+    public R getCurrentSeckillProduct(){
+        List<SeckillSkuRedisTo> data = seckillService.getCurrentSeckillProduct();
+        return R.ok().setData(data);
     }
 }

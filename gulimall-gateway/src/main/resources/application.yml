@@ -75,6 +75,11 @@
 #          uri: lb://gulimall-member
 #          predicates:
 #            - Host=member.gulimall.com
+#
+#        - id: seckill_host_route
+#          uri: lb://gulimall-seckill
+#          predicates:
+#            - Host=seckill.gulimall.com
 #  application:
 #    name: gulimall-gateway
 #
