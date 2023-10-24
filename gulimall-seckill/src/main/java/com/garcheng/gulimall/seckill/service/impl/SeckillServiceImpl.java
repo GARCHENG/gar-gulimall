@@ -184,6 +184,8 @@ public class SeckillServiceImpl implements SeckillService {
         return null;
     }
 
+    // TODO: 2023/10/24 过期时间设置
+    // TODO: 2023/10/24 秒杀后续流程 收货地址选择
     @Override
     public String kill(String killId, String key, Integer num) {
         //校验合法性
