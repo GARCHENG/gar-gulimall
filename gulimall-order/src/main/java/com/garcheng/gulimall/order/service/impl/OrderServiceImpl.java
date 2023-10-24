@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.alipay.api.AlipayApiException;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.garcheng.gulimall.common.to.mq.OrderTo;
+import com.garcheng.gulimall.common.to.mq.SeckillOrderTo;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.common.vo.MemberInfo;
 import com.garcheng.gulimall.order.config.AlipayTemplate;
@@ -286,6 +287,26 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
         return "success";
 
+    }
+
+    @Override
+    public void handleSeckillOrder(SeckillOrderTo seckillOrder) {
+        //保存订单信息
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+        orderEntity.setPayAmount(seckillOrder.getSeckillPrice().multiply(new BigDecimal(seckillOrder.getCount())));
+        orderEntity.setOrderSn(seckillOrder.getOrderSn());
+        orderEntity.setMemberId(seckillOrder.getMemberId());
+        save(orderEntity);
+        //保存订单项信息
+        OrderItemEntity orderItemEntity = new OrderItemEntity();
+        orderItemEntity.setOrderSn(seckillOrder.getOrderSn());
+        orderItemEntity.setSkuId(seckillOrder.getSkuId());
+        orderItemEntity.setSkuQuantity(seckillOrder.getCount());
+        orderItemEntity.setRealAmount(seckillOrder.getSeckillPrice().multiply(new BigDecimal(seckillOrder.getCount())));
+        orderItemService.save(orderItemEntity);
+
+        // TODO: 2023/10/24 向延迟队列发送消息
     }
 
     private void saveOrder(orderCreateTo orderCreateTo) {

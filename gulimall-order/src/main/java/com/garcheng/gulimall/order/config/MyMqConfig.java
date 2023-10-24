@@ -59,6 +59,19 @@ public class MyMqConfig {
         return binding;
     }
 
+    @Bean
+    public Queue OrderSeckillOrderQueue(){
+        //String name, boolean durable, boolean exclusive, boolean autoDelete, Map<String, Object> arguments
+        Queue queue = new Queue("order.seckill.order.queue", true, false, false, null);
+        return queue;
+    }
+
+    @Bean
+    public Binding OrderSeckillOrderBinding(){
+        Binding binding = new Binding("order.seckill.order.queue", Binding.DestinationType.QUEUE, "order-event-exchange", "order.seckill.order", null);
+        return binding;
+    }
+
 
 
 

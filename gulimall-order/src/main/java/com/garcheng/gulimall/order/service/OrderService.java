@@ -2,6 +2,7 @@ package com.garcheng.gulimall.order.service;
 
 import com.alipay.api.AlipayApiException;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.garcheng.gulimall.common.to.mq.SeckillOrderTo;
 import com.garcheng.gulimall.common.utils.PageUtils;
 import com.garcheng.gulimall.order.entity.OrderEntity;
 import com.garcheng.gulimall.order.vo.*;
@@ -33,5 +34,7 @@ public interface OrderService extends IService<OrderEntity> {
     PageUtils queryPageWithItems(Map<String, Object> params);
 
     String handlePayNotify(PayAsyncVo vo);
+
+    void handleSeckillOrder(SeckillOrderTo seckillOrder);
 }
 

@@ -7,9 +7,9 @@
 #    cache: false
 #  application:
 #    name: gulimall-seckill
-#  # session:
-#  #   store-type: redis
-#  #   timeout: 3600
+#  session:
+#    store-type: redis
+#    timeout: 3600
 #  redis:
 #    host: gulimall.com
 #  task:
@@ -17,5 +17,16 @@
 #      pool:
 #        max-size: 50
 #        core-size: 5
+#  rabbitmq:
+#    host: gulimall.com
+#    virtual-host: /
+#    publisher-confirms: true
+#    publisher-returns: true
+#    template:
+#      mandatory: true
+#    #消费端手动确认ack
+#    listener:
+#      simple:
+#        acknowledge-mode: manual
 #server:
 #  port: 7011
