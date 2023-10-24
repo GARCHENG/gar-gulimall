@@ -2,14 +2,17 @@ package com.garcheng.gulimall.seckill.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.garcheng.gulimall.common.utils.R;
 import com.garcheng.gulimall.seckill.feign.CouponFeignService;
 import com.garcheng.gulimall.seckill.feign.ProductFeignService;
+import com.garcheng.gulimall.seckill.interceptor.LoginInterceptor;
 import com.garcheng.gulimall.seckill.service.SeckillService;
 import com.garcheng.gulimall.seckill.to.SeckillSkuRedisTo;
 import com.garcheng.gulimall.seckill.vo.SeckillSessionVo;
 import com.garcheng.gulimall.seckill.vo.SeckillSkuRelationVo;
 import com.garcheng.gulimall.seckill.vo.SkuVo;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -22,14 +25,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class SeckillServiceImpl implements SeckillService {
 
     public static final String SECKILL_SESSIONS_PREFIX = "seckill:sessions:";
 
     public static final String SECKILL_SKUS_PREFIX = "seckill:skus";
+
+    public static final String SECKILL_USERS_PREFIX = "seckill:users:";
 
     public static final String SECKILL_STOCK_SEMAPHORE = "seckill:stock:";
 
@@ -70,6 +77,7 @@ public class SeckillServiceImpl implements SeckillService {
                         // TODO: 2023/10/23 后面添加关联的商品无法添加至redis
                         List<String> skuIds = relationEntities.stream().map(relation -> relation.getId() + "_" + relation.getSkuId().toString())
                                 .collect(Collectors.toList());
+                        // TODO: 2023/10/24 设置过期时间
                         stringRedisTemplate.opsForList().leftPushAll(key, skuIds);
                     }
                 }
@@ -105,6 +113,7 @@ public class SeckillServiceImpl implements SeckillService {
                             RSemaphore semaphore = redissonClient.getSemaphore(SECKILL_STOCK_SEMAPHORE + token);
                             semaphore.trySetPermits(Integer.parseInt(seckillSku.getSeckillCount().toString()));
 
+                            // TODO: 2023/10/24 设置过期时间
                             ops.put(seckillSku.getId() + "_" + seckillSku.getSkuId().toString(), JSON.toJSONString(seckillSkuRedisTo));
                         }
                     });
@@ -167,6 +176,44 @@ public class SeckillServiceImpl implements SeckillService {
                 }
             }
         }
+        return null;
+    }
+
+    @Override
+    public String kill(String killId, String key, Integer num) {
+        //校验合法性
+        BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(SECKILL_SKUS_PREFIX);
+        String seckillJson = hashOps.get(killId);
+        SeckillSkuRedisTo redisTo = JSON.parseObject(seckillJson, SeckillSkuRedisTo.class);
+        //校验是否在秒杀期内
+        long current = new Date().getTime();
+        if (current >= redisTo.getStartTime() && current <= redisTo.getEndTime()){
+            //校验key是否与该商品的随机码一致
+            if (key.equals(redisTo.getRandomCode()) && killId.equals(redisTo.getPromotionSessionId()+"_"+ redisTo.getSkuId())){
+                //校验购买数量是否符合要求
+                if (num <= Integer.parseInt(redisTo.getSeckillLimit().toString())){
+                    //校验该用户是否重复购买 秒杀成功后去redis进行占位
+                    //userid_sessionId_skuId
+                    String userKey = SECKILL_USERS_PREFIX+LoginInterceptor.threadLocal.get().getId()+"_"+redisTo.getPromotionSessionId()+"_"+redisTo.getSkuId();
+                    Boolean absent = stringRedisTemplate.opsForValue().setIfAbsent(userKey, num.toString(), current - redisTo.getEndTime(), TimeUnit.MILLISECONDS);
+                    if (absent){
+                        //该账号未重复购买 去尝试获取信号量
+                        RSemaphore semaphore = redissonClient.getSemaphore(SECKILL_STOCK_SEMAPHORE + key);
+                        try {
+                            semaphore.tryAcquire(num,100,TimeUnit.MILLISECONDS);
+                            //秒杀成功 快速返回 发mq下单
+                            String orderSn = IdWorker.getTimeId();
+
+                            return orderSn;
+                        } catch (InterruptedException e) {
+                            log.warn("【"+userKey+"】秒杀失败,信号量获取失败");
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+
         return null;
     }
 
