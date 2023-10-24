@@ -35,3 +35,8 @@
 #server:
 #  port: 7011
 #
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: *

@@ -19,6 +19,8 @@ public enum BaseCodeEnum {
 
     NO_STOCK_EXCEPTION(21000,"库存锁定失败"),
 
+    TOO_MANY_REQUEST(50001,"当前请求过多，请稍后重试"),
+
     OAUTH_LOGIN_EXCEPTION(12004,"第三方登录出现异常");
 
     private Integer code;
