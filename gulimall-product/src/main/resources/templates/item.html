@@ -691,6 +691,13 @@
                             立即抢购
                         </a>
                     </div>
+
+                    <div class="box-btns-two"
+                         th:if="${item.skuSeckillInfo != null && !(#dates.createNow().getTime() >= item.skuSeckillInfo.startTime && #dates.createNow().getTime() <= item.skuSeckillInfo.endTime)}">
+                        <a class="addToCartA" href="#" th:attr="skuId=${item.info.skuId}">
+                            加入购物车
+                        </a>
+                    </div>
                     <div class="box-btns-three">
                         <img src="/static/item/img/e4ed3606843f664591ff1f68f7fda12d.png" alt=""/> 分享
                     </div>
