@@ -38,7 +38,7 @@ public class SeckillController {
 //
 //    public R blockHandlerForGetUser(BlockException ex) {
 //        log.warn("被限流了【{}】", ex.getMessage());
-//        return R.error();
+//        return R.error(BaseCodeEnum.TOO_MANY_REQUEST.getCode(), BaseCodeEnum.TOO_MANY_REQUEST.getMessage());
 //    }
 
 //    //自定义sentinel资源（代码方式）
@@ -50,7 +50,7 @@ public class SeckillController {
 //            return R.ok().setData(data);
 //        }catch (BlockException e){
 //            log.warn("被限流了【{}】",e.getMessage());
-//            return R.error();
+//            return R.error(BaseCodeEnum.TOO_MANY_REQUEST.getCode(), BaseCodeEnum.TOO_MANY_REQUEST.getMessage());
 //        }
 //
 //    }
