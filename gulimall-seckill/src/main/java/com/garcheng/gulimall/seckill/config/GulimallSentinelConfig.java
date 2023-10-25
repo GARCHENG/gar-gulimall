@@ -16,6 +16,7 @@ import java.io.IOException;
 public class GulimallSentinelConfig {
 
     public GulimallSentinelConfig(){
+        //只处理url请求的拦截处理
         WebCallbackManager.setUrlBlockHandler(new UrlBlockHandler(){
             @Override
             public void blocked(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, BlockException e) throws IOException {
